@@ -3,9 +3,16 @@
     <h4 class="mb-0 fw-medium">Agenda del día</h4>
     <small class="text-muted">Consulta y gestiona las citas programadas</small>
   </div>
-  <a routerLink="/appointments/new"
-     class="btn btn-primary d-flex align-items-center gap-2">
-    <i class="bi bi-calendar-plus"></i>Nueva cita</a>
+  <div class="d-flex gap-2">
+    <button class="btn btn-outline-success d-flex align-items-center gap-2"
+            (click)="exportCsv()">
+      <i class="bi bi-file-earmark-spreadsheet"></i>Exportar CSV
+    </button>
+    <a routerLink="/appointments/new"
+       class="btn btn-primary d-flex align-items-center gap-2">
+      <i class="bi bi-calendar-plus"></i>Nueva cita
+    </a>
+  </div>
 </div>
 
 <!-- Filtros -->

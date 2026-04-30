@@ -35,20 +35,16 @@ export class HttpAppointmentRepository extends AppointmentRepository {
   }
 
   getHistory(patientId?: string, professionalId?: string, date?: string): Observable<Appointment[]> {
-    let params = new HttpParams();
+  let params = new HttpParams();
 
-    // Solo agregamos los params si tienen valor real
-    if (patientId) {
-      params = params.set('patientId', patientId);
-    }
-    if (professionalId) {
-      params = params.set('professionalId', professionalId);
-    }
-    if (date) {
-      params = params.set('date', date);
-    }
-    return this.http.get<Appointment[]>(`${this.url}/my-appointments`, { params })
+  if (professionalId) {
+    params = params.set('professionalId', professionalId);
   }
+  if (date) {
+    params = params.set('date', date);
+  }
+  return this.http.get<Appointment[]>(`${this.url}`, { params });
+}
 
   findById(id: string): Observable<Appointment> {
     return this.http.get<Appointment>(`${this.url}/${id}`);

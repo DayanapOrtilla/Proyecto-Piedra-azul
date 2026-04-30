@@ -1,7 +1,7 @@
 import { Component, inject, OnInit, OnDestroy, signal } from '@angular/core';
 import { RouterLink }          from '@angular/router';
 import { FormsModule }         from '@angular/forms';
-import { Subscription, throwIfEmpty }        from 'rxjs';
+import { Subscription }        from 'rxjs';
 import { AppointmentsService } from '../../../core/services/appointments.service';
 import type { Appointment }    from '../../../core/models/appointment';
 import type { Professional }   from '../../../core/models/professional';
@@ -9,6 +9,7 @@ import { StatusLabelPipe }     from '../../../shared/pipes/status-label-pipe';
 import { StatusBadgePipe }     from '../../../shared/pipes/status-badge-pipe';
 import { SpecialtyLabelPipe }  from '../../../shared/pipes/specialty-label-pipe';
 import { ProfessionalsService } from '../../../core/services/professionals.service';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector:    'app-appointment-list',
@@ -17,23 +18,20 @@ import { ProfessionalsService } from '../../../core/services/professionals.servi
   templateUrl: './appointment-list.html',
 })
 export class AppointmentListComponent implements OnInit, OnDestroy {
-  private appointmenSvc  = inject(AppointmentsService);
+  private appointmenSvc   = inject(AppointmentsService);
   private professionalSvc = inject(ProfessionalsService);
   private subs = new Subscription();
 
-  // ── Estado ────────────────────────────────────────────────
-  protected appointments = signal<Appointment[]>([]);
+  protected appointments  = signal<Appointment[]>([]);
   protected professionals = signal<Professional[]>([]);
   protected loading = false;
 
-  // ── Filtros ───────────────────────────────────────────────
   protected selectedProfessionalId = '';
   protected selectedDate = new Date().toISOString().split('T')[0];
 
-  // ── Contadores ────────────────────────────────────────────
-  protected get total() { return this.appointments().length; }
+  protected get total()     { return this.appointments().length; }
   protected get confirmed() { return this.appointments().filter(a => a.status === 'CONFIRMADA').length; }
-  protected get pending() { return this.appointments().filter(a => a.status === 'PENDIENTE').length; }
+  protected get pending()   { return this.appointments().filter(a => a.status === 'PENDIENTE').length; }
   protected get completed() { return this.appointments().filter(a => a.status === 'COMPLETADA').length; }
 
   ngOnInit(): void {
@@ -54,11 +52,9 @@ export class AppointmentListComponent implements OnInit, OnDestroy {
 
   protected loadAppointments(): void {
     this.loading = true;
-  
-  // Usamos el nuevo método que respeta el flujo de roles del backend
-  const sub = this.appointmenSvc.getHistory(
-    this.selectedProfessionalId || undefined, 
-    this.selectedDate || undefined
+    const sub = this.appointmenSvc.getHistory(
+      this.selectedProfessionalId || undefined,
+      this.selectedDate || undefined
     ).subscribe({
       next: (data) => {
         this.appointments.set(data);
@@ -66,7 +62,6 @@ export class AppointmentListComponent implements OnInit, OnDestroy {
       },
       error: () => this.loading = false
     });
-    
     this.subs.add(sub);
   }
 
@@ -74,13 +69,30 @@ export class AppointmentListComponent implements OnInit, OnDestroy {
     this.loadAppointments();
   }
 
-  protected update(id: string) {
-    //TODO: implement
+  protected exportCsv(): void {
+    const token = localStorage.getItem('pa_token');
+    let url = `${environment.apiUrl}/appointments/export?`;
+    if (this.selectedProfessionalId) url += `professionalId=${this.selectedProfessionalId}&`;
+    if (this.selectedDate) url += `date=${this.selectedDate}`;
+
+    fetch(url, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    .then(res => res.blob())
+    .then(blob => {
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `citas_${this.selectedDate || 'todas'}.csv`;
+      link.click();
+      URL.revokeObjectURL(link.href);
+    });
   }
 
-  protected delete(id: string){
-    if(this.appointmenSvc.delete(id)){
+  protected update(id: string) {
+    // TODO: implement
+  }
 
-    }
+  protected delete(id: string) {
+    this.appointmenSvc.delete(id);
   }
 }
