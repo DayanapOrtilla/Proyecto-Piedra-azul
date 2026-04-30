@@ -7,14 +7,14 @@ import { SpecialtyLabelPipe }      from '../../../shared/pipes/specialty-label-p
 import { FormsModule } from '@angular/forms';
 
 @Component({
-  selector:    'app-professional-list',
-  standalone:  true,
-  imports:     [RouterLink, SpecialtyLabelPipe, FormsModule],
+  selector: 'app-professional-list',
+  standalone: true,
+  imports: [RouterLink, SpecialtyLabelPipe, FormsModule],
   templateUrl: './professional-list.html',
   styleUrl: './professional-list.css',
 })
 export class ProfessionalListComponent implements OnInit, OnDestroy {
-  private svc  = inject(ProfessionalsService);
+  private svc = inject(ProfessionalsService);
   private subs = new Subscription();
 
   protected professionals = signal<Professional[]> ([]);
@@ -26,7 +26,7 @@ export class ProfessionalListComponent implements OnInit, OnDestroy {
 
   protected get filtered(): Professional[] {
     return this.professionals().filter(p => {
-      const byType   = !this.filterType   || p.type === this.filterType;
+      const byType = !this.filterType || p.type === this.filterType;
       const byActive = !this.filterActive || String(p.isActive) === this.filterActive;
       return byType && byActive;
     });
@@ -55,13 +55,20 @@ export class ProfessionalListComponent implements OnInit, OnDestroy {
         this.professionals.set(data); 
         this.loading = false;
       },
-      error: ()     => { this.loading = false; }
+      error: () => { this.loading = false; }
     });
     this.subs.add(sub);
   }
 
   protected toggleActive(prof: Professional): void {
     const sub = this.svc.toggleActive(prof.id, !prof.isActive).subscribe({
+      next: () => { this.load(); }
+    });
+    this.subs.add(sub);
+  }
+
+  protected delete(prof: Professional): void {
+    const sub = this.svc.delete(prof.id).subscribe({
       next: () => { this.load(); }
     });
     this.subs.add(sub);

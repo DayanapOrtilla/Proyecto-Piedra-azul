@@ -8,8 +8,7 @@ import { environment } from '../../../../environments/environment';
 
 @Injectable()
 export class HttpAvailabilityRepository extends AvailabilityRepository {
-  private http = inject(HttpClient);
-  private url  = `${environment.apiUrl}/availabilities`;
+  protected url  = `${environment.apiUrl}/availabilities`;
 
   findAll(): Observable<Availability[]> {
     return this.http.get<Availability[]>(this.url);
@@ -27,8 +26,8 @@ export class HttpAvailabilityRepository extends AvailabilityRepository {
   } 
   */
 
-  //Filtrado del lado del cliente
-  findByProfessionalId(id: string): Observable<Availability[]> {
+  //Filtrado del lado del Professional
+  findByProfessional(id: string): Observable<Availability[]> {
     return this.http.get<Availability[]>(`${this.url}/${id}/availability`);
   }
 
@@ -46,5 +45,8 @@ export class HttpAvailabilityRepository extends AvailabilityRepository {
 
   saveAll(professionalId: string, availability: Availability[]): Observable<Availability[]> {
     return this.http.put<Availability[]>(`${this.url}/${professionalId}/availability`, availability);
+  }
+  delete(id: string): Observable<Boolean> {
+    return this.http.delete<Boolean>(`${this.url}/${id}`);   
   }
 }

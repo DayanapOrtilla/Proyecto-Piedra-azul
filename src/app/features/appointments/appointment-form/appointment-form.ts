@@ -3,7 +3,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { of, Subject, Subscription }            from 'rxjs';
-import { AppointmentsService, BookingState, EMPTY_BOOKING } from '../../../core/services/appointments.service';
+import { AppointmentsService, CreateAppointmentDTO } from '../../../core/services/appointments.service';
 import { PatientsService, CreatePatientDto } from '../../../core/services/patients.service';
 import { AuthService }             from '../../../core/services/auth.service';
 import type { Professional }       from '../../../core/models/professional';
@@ -39,7 +39,7 @@ export class AppointmentFormComponent implements OnInit, OnDestroy {
 
   protected currentStep = 1;
   protected totalSteps = 3;
-  protected booking: BookingState = { ...EMPTY_BOOKING };
+  protected booking: Partial<CreateAppointmentDTO> = {};
   protected confirmed = false;
   protected loading = false;
   protected errorMsg: string | null = null;
@@ -93,7 +93,7 @@ export class AppointmentFormComponent implements OnInit, OnDestroy {
   }
 
   protected get canGoStep3(): boolean {
-    return this.booking.date !== null && this.booking.startTime !== null;
+    return this.booking.date !== null && this.booking.time !== null;
   }
 
   ngOnInit(): void {
@@ -215,11 +215,11 @@ export class AppointmentFormComponent implements OnInit, OnDestroy {
 
   protected selectSpecialty(specialty: Specialty): void {
     if (this.booking.specialty !== specialty) {
-      this.booking.professional = null;
+      this.booking.professional = undefined;
+      this.booking.date = undefined;
+      this.booking.time = undefined;
+
       this.professionals.set([]);
-      this.booking.date = null;
-      this.booking.startTime = null;
-      this.booking.endTime = null;
       this.availableSlots = [];
     }
 
@@ -233,7 +233,7 @@ export class AppointmentFormComponent implements OnInit, OnDestroy {
         if (data.length > 0) {
           this.booking.professional = data[0];
         } else {
-          this.booking.professional = null;
+          this.booking.professional = undefined;
         }
 
         this.loading = false;
@@ -248,8 +248,7 @@ export class AppointmentFormComponent implements OnInit, OnDestroy {
 
   protected selectProfessional(prof: Professional): void {
     this.booking.professional = prof;
-    this.booking.startTime = null;
-    this.booking.endTime = null;
+    this.booking.time = undefined;
     this.availableSlots = [];
 
     if (this.booking.date) {
@@ -259,7 +258,7 @@ export class AppointmentFormComponent implements OnInit, OnDestroy {
 
   protected onDateChange(date: string): void {
     this.booking.date = date;
-    this.booking.startTime = null;
+    this.booking.time = undefined;
     this.availableSlots = []; // Limpiar lista vieja inmediatamente
 
     if (!date || !this.booking.professional) {
@@ -285,17 +284,17 @@ export class AppointmentFormComponent implements OnInit, OnDestroy {
   }
 
   protected selectSlot(slot: string): void {
-    this.booking.startTime = slot;
-    this.booking.endTime = this.svc.calculateEndTime(
-      slot,
-      this.booking.professional!.intervalMinutes
-    );
+    this.booking.time = slot;
   }
 
+  /**
+   * Confirm to create a appointment
+   * @returns void
+   */
   protected confirm(): void {
-    // 1. Extraer datos y asegurar que no sean null para TS
+    // 1. Extraer datos
   const dateValue = this.booking.date;
-  const timeValue = this.booking.startTime;
+  const timeValue = this.booking.time;
   const professionalId = this.booking.professional?.id;
   
   // 2. Determinar el ID del paciente según el modo
@@ -375,7 +374,7 @@ export class AppointmentFormComponent implements OnInit, OnDestroy {
   }
 
   protected isSelectedSlot(slot: string): boolean {
-    return this.booking.startTime === slot;
+    return this.booking.time === slot;
   }
 
   protected formatDate(date: string): string {

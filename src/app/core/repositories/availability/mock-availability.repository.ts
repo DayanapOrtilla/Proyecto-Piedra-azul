@@ -38,6 +38,8 @@ export class MockAvailabilityRepository extends AvailabilityRepository {
     { id: 'av28', professionalId: 'p1', dayOfWeek: 6, startTime: '08:00',    endTime: '13:00', isActive: false },
   ];
 
+  protected url: string = "";
+
   findAll(): Observable<Availability[]> {
     return of([...this.data]);
   }
@@ -46,7 +48,7 @@ export class MockAvailabilityRepository extends AvailabilityRepository {
     return of(this.data.find(p => p.id === id));
   }
 
-  findByProfessionalId(id: string): Observable<Availability[]> {
+  findByProfessional(id: string): Observable<Availability[]> {
     return of(this.data.filter(p => p.professionalId === id));
   }
 
@@ -72,5 +74,12 @@ export class MockAvailabilityRepository extends AvailabilityRepository {
     this.data = this.data.filter(p => p.professionalId !== professionalId);
     this.data.push(...availability);
     return of(availability);  
+  }
+
+  delete(id: string): Observable<Boolean> {
+    const index = this.data.findIndex(p => p.id === id);
+    if (index === -1) throw new Error('Paciente no encontrado');
+    this.data.splice(index, 1);
+    return of(true);
   }
 }

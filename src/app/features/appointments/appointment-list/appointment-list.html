@@ -106,9 +106,7 @@
             @for (appt of appointments(); track appt.id) {
               <tr>
                 <td class="ps-4">
-                  <span class="fw-medium text-primary">{{ appt.startTime }}</span>
-                  <br>
-                  <small class="text-muted">{{ appt.endTime }}</small>
+                  <span class="fw-medium text-primary">{{ appt.time }}</span>
                 </td>
                 <td>
                   <div class="fw-medium">

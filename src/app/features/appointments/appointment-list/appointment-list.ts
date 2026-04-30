@@ -1,7 +1,7 @@
 import { Component, inject, OnInit, OnDestroy, signal } from '@angular/core';
 import { RouterLink }          from '@angular/router';
 import { FormsModule }         from '@angular/forms';
-import { Subscription }        from 'rxjs';
+import { Subscription, throwIfEmpty }        from 'rxjs';
 import { AppointmentsService } from '../../../core/services/appointments.service';
 import type { Appointment }    from '../../../core/models/appointment';
 import type { Professional }   from '../../../core/models/professional';
@@ -17,7 +17,7 @@ import { ProfessionalsService } from '../../../core/services/professionals.servi
   templateUrl: './appointment-list.html',
 })
 export class AppointmentListComponent implements OnInit, OnDestroy {
-  private svc  = inject(AppointmentsService);
+  private appointmenSvc  = inject(AppointmentsService);
   private professionalSvc = inject(ProfessionalsService);
   private subs = new Subscription();
 
@@ -56,7 +56,7 @@ export class AppointmentListComponent implements OnInit, OnDestroy {
     this.loading = true;
   
   // Usamos el nuevo método que respeta el flujo de roles del backend
-  const sub = this.svc.getHistory(
+  const sub = this.appointmenSvc.getHistory(
     this.selectedProfessionalId || undefined, 
     this.selectedDate || undefined
     ).subscribe({
@@ -72,5 +72,15 @@ export class AppointmentListComponent implements OnInit, OnDestroy {
 
   protected onFilterChange(): void {
     this.loadAppointments();
+  }
+
+  protected update(id: string) {
+    //TODO: implement
+  }
+
+  protected delete(id: string){
+    if(this.appointmenSvc.delete(id)){
+
+    }
   }
 }

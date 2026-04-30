@@ -11,7 +11,9 @@ export class MockPatientRepository extends PatientRepository {
     { id: 'pa1', document: '1234567890', firstName: 'Juan',  lastName: 'García', birthdate: new Date('2002-01-02'), phone: '3001234567', gender: 'MASCULINO', email: 'juan@email.com', isActive: true },
     { id: 'pa2', document: '9876543210', firstName: 'María', lastName: 'López', birthdate: new Date('1995-05-15'), phone: '3109876543', gender: 'FEMENINO',  isActive: true },
     { id: 'pa3', document: '1122334455', firstName: 'Pedro', lastName: 'Suárez', birthdate: new Date('1988-03-20'), phone: '3201122334', gender: 'MASCULINO', isActive: true },
-    ];
+  ];
+
+  protected url : string = "";
 
   findAll(): Observable<Patient[]> {
     return of([...this.data]);
@@ -19,6 +21,10 @@ export class MockPatientRepository extends PatientRepository {
 
   findById(id: string): Observable<Patient | undefined> {
     return of(this.data.find(p => p.id === id));
+  }
+
+  findByUser(user: string): Observable<Patient | undefined> {
+    return of(this.data.find(p => p.userId ===user))
   }
 
   search(term: string): Observable<Patient[]> {
@@ -53,10 +59,10 @@ export class MockPatientRepository extends PatientRepository {
     return this.update(id, { isActive: false } as any);
   }
 
-  delete(id: string): Observable<void> {
+  delete(id: string): Observable<boolean> {
     const index = this.data.findIndex(p => p.id === id);
     if (index === -1) throw new Error('Paciente no encontrado');
     this.data.splice(index, 1);
-    return of(void 0);
+    return of(true);
   }
 }

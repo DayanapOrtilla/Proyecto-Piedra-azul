@@ -47,7 +47,7 @@ export class ProfessionalsService {
   }
 
   getAvailability(professionalId: string): Observable<Availability[]> {
-    return this.availRepo.findByProfessionalId(professionalId);
+    return this.availRepo.findByProfessional(professionalId);
   }
 
   saveAvailability(professionalId: string, availability: Availability[]): Observable<Availability[]> {
@@ -64,5 +64,9 @@ export class ProfessionalsService {
 
   toggleActive(id: string, isActive: boolean): Observable<Professional> {
     return this.repo.update(id, { isActive });
+  }
+
+  delete(id: string): Observable<Boolean> {
+    return this.repo.delete(id);
   }
 }

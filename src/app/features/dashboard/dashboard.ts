@@ -90,7 +90,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private loadAppointments(): void {
     this.loading = true;
 
-    const sub = this.appointmentSvc.getAll(this.selectedProfessionalId, this.selectedDate).subscribe({
+    const sub = this.appointmentSvc.findByProfessional(this.selectedProfessionalId, this.selectedDate).subscribe({
       next: (data) => {
         this.appointments.set(data);
         this.loading = false;

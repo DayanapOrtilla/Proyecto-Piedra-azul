@@ -9,23 +9,15 @@ import type { Specialty }         from '../../core/models/professional';
 import type { Patient }           from '../models/patient';
 import { HttpParams } from '@angular/common/http';
 
-export interface BookingState {
-  specialty:    Specialty    | null;
-  professional: Professional | null;
-  patient:      Pick<Patient, 'id' | 'firstName' | 'lastName' | 'phone'> | null; // ← agregar
-  date:         string       | null;
-  startTime:    string       | null;
-  endTime:      string       | null;
+export interface CreateAppointmentDTO {
+  specialty: Specialty;
+  professional: Pick<Professional, 'id' | 'firstName' | 'lastName' | 'specialty' | 'type' | 'intervalMinutes' | 'isActive'>;
+  patient: Pick<Patient, 'id' | 'firstName' | 'lastName' | 'phone'>;
+  date: string;
+  time: string;
 }
 
-export const EMPTY_BOOKING: BookingState = {
-  specialty:    null,
-  professional: null,
-  patient:      null,
-  date:         null,
-  startTime:    null,
-  endTime:      null,
-};
+export type UpdateAppointmentDTO = Partial<CreateAppointmentDTO>;
 
 @Injectable({ providedIn: 'root' })
 export class AppointmentsService {
@@ -33,8 +25,12 @@ export class AppointmentsService {
   private profsSvc = inject(ProfessionalsService);
   private availRepo = inject(AvailabilityRepository);
 
-  getAll(professionalId?: string, date?: string): Observable<Appointment[]> {
-    return this.repo.findAll(professionalId, date);
+  findByProfessional(professionalId: string, date?: string): Observable<Appointment[]> {
+    return this.repo.findByProfessional(professionalId, date);
+  }
+
+  findByPatient(patientId: string, date?: string): Observable<Appointment[]>{
+    return this.repo.findByPatient(patientId, date);
   }
 
   getAvailableSpecialties(): Observable<Specialty[]> {
@@ -50,8 +46,8 @@ export class AppointmentsService {
 
     return forkJoin({
       professional: this.profsSvc.getById(professionalId),
-      availability: this.availRepo.findByProfessionalId(professionalId),
-      appointments: this.repo.findAll(professionalId, date),
+      availability: this.availRepo.findByProfessional(professionalId),
+      appointments: this.repo.findByProfessional(professionalId, date),
     }).pipe(
       map(({ professional, availability, appointments }) => {
         if (!professional) return [];
@@ -76,14 +72,14 @@ export class AppointmentsService {
         // Quitar slots ya ocupados
         const booked = appointments
           .filter(a => a.status !== 'CANCELADA' && a.status !== 'NO_ASISTE')
-          .map(a => a.startTime);
+          .map(a => a.time);
 
         return allSlots.filter(slot => !booked.includes(slot));
       })
     );
   }
 
-  confirmAppointment(booking: BookingState): Observable<Appointment> {
+  confirmAppointment(booking: CreateAppointmentDTO): Observable<Appointment> {
     return this.repo.save(booking);
   }
 
@@ -103,7 +99,15 @@ export class AppointmentsService {
     return slots;
   }
 
-  getHistory(professionalId?: string, date?: string): Observable<Appointment[]> {
-    return this.repo.getHistory(professionalId, date);
+  getHistory(patientId?: string, professionalId?: string, date?: string): Observable<Appointment[]> {
+    return this.repo.getHistory(patientId, professionalId, date);
+  }
+
+  update(id: string, dto: UpdateAppointmentDTO): Observable<Appointment> {
+    return this.repo.update(id, dto);
+  }
+
+  delete(id: string): Observable<Boolean> {
+    return this.repo.delete(id);
   }
 }

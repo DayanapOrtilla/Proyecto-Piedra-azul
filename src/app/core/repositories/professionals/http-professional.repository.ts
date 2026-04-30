@@ -5,12 +5,10 @@ import { ProfessionalRepository }  from './professional.repository';
 import type { Professional, Specialty }       from '../../models/professional';
 import type { CreateProfessionalDto, UpdateProfessionalDto } from '../../../../app/core/services/professionals.service';
 import { environment }             from '../../../../environments/environment';
-import { isActive } from '@angular/router';
 
 @Injectable()
 export class HttpProfessionalRepository extends ProfessionalRepository {
-  private http = inject(HttpClient);
-  private url  = `${environment.apiUrl}/professionals`;
+  protected url  = `${environment.apiUrl}/professionals`;
 
   findAll(): Observable<Professional[]> {
     return this.http.get<Professional[]>(this.url);
@@ -31,5 +29,9 @@ export class HttpProfessionalRepository extends ProfessionalRepository {
 
   update(id: string, dto: UpdateProfessionalDto): Observable<Professional> {
     return this.http.put<Professional>(`${this.url}/${id}`, dto);
+  }
+
+  delete(id: string): Observable<Boolean> {
+    return this.http.delete<Boolean>(`${this.url}/${id}`);
   }
 }

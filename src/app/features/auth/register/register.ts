@@ -1,27 +1,30 @@
 import { Component, inject, signal } from '@angular/core';
 import { Router, RouterLink }        from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators, AbstractControl } from '@angular/forms';
-import { AuthService } from '../../../core/services/auth.service';
+import { AuthService, RegisterPatientDto } from '../../../core/services/auth.service';
+import { CreatePatientDto, PatientsService } from '../../../core/services/patients.service';
+import { Gender } from '../../../core/models/patient';
 
 @Component({
   selector:    'app-register',
   standalone:  true,
-  imports:     [ReactiveFormsModule, RouterLink],
+  imports:     [ReactiveFormsModule, RouterLink,],
   templateUrl: './register.html',
   styleUrl: './register.css',
 })
 export class RegisterComponent {
   private router = inject(Router);
-  private fb     = inject(FormBuilder);
-  private auth   = inject(AuthService);
+  private fb = inject(FormBuilder);
+  private auth = inject(AuthService);
+  private svcPatient = inject(PatientsService);
 
   form = this.fb.group({
-    documentId: ['', [Validators.required]],
+    document: ['', [Validators.required]],
     firstName:  ['', [Validators.required]],
     lastName:   ['', [Validators.required]],
     phone:      ['', [Validators.required, Validators.pattern(/^[0-9]{10}$/)]],
     gender:     ['', [Validators.required]],
-    email:      ['', [Validators.required, Validators.email]],
+    email:      ['',],
     password:   ['', [Validators.required, Validators.minLength(8)]],
     confirm:    ['', [Validators.required]],
   }, { validators: this.passwordMatch });
@@ -37,6 +40,7 @@ export class RegisterComponent {
   }
 
   async onSubmit(): Promise<void> {
+    console.log('Creando cuenta');
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
@@ -46,13 +50,27 @@ export class RegisterComponent {
     this.errorMsg.set(null);
 
     try {
-    // TODO: reemplazar con llamada real al backend
-      // await this.patientsSvc.register(this.form.value);
+      if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+      const value = this.form.getRawValue();
 
-      // Tras registro, inicia sesión automáticamente con el email y contraseña
-      // En producción el backend devolverá el token directamente en el registro
+      const dto: RegisterPatientDto = {
+        document: value.document ?? '',
+        firstName: value.firstName ?? '',
+        lastName: value.lastName ?? '',
+        phone: value.phone ?? '',
+        email: value.email ?? '',
+        password: value.password ?? '',
+        gender: value.gender as Gender,
+        isActive: true
+      }
+
+      await this.auth.register(dto);
+
       await this.auth.login({
-        user:    this.form.value.documentId!,
+        user:    this.form.value.document!,
         password: this.form.value.password!,
       });
 

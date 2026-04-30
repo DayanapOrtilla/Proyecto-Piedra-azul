@@ -12,7 +12,7 @@
         registrada para el
       </p>
       <p class="fw-medium mb-4">
-        {{ formatDate(booking.date!) }} a las {{ booking.startTime }}
+        {{ formatDate(booking.date!) }} a las {{ booking.time }}
       </p>
       <div class="d-grid gap-2">
         @if (isSchedulerMode()) {
@@ -495,7 +495,7 @@
               <div>
                 <div class="text-muted small">Hora</div>
                 <div class="fw-medium" style="font-size: 17px;">
-                  {{ booking.startTime }} — {{ booking.endTime }}
+                  {{ booking.time }}
                 </div>
                 <div class="text-muted small">
                   Duración: {{ booking.professional?.intervalMinutes }} minutos

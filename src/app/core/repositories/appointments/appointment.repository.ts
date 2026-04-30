@@ -1,9 +1,10 @@
 import { Observable }      from 'rxjs';
 import type { Appointment } from '../../models/appointment';
-import type { BookingState } from '../../services/appointments.service';
+import type { CreateAppointmentDTO, UpdateAppointmentDTO } from '../../services/appointments.service';
+import { BaseRepository } from '../base.repository';
 
-export abstract class AppointmentRepository {
-  abstract findAll(professionalId?: string, date?: string): Observable<Appointment[]>;
-  abstract save(booking: BookingState): Observable<Appointment>;
-  abstract getHistory(professionalId?: string, date?: string): Observable<Appointment[]>
+export abstract class AppointmentRepository extends BaseRepository<Appointment, CreateAppointmentDTO, UpdateAppointmentDTO> {
+  abstract findByProfessional(professionalId: string, date?: string): Observable<Appointment[]>;
+  abstract findByPatient(patientId: string, date?: string): Observable<Appointment[]>;
+  abstract getHistory(patientId?: string, professionalId?: string, date?: string): Observable<Appointment[]>
 }

@@ -25,7 +25,7 @@ export class AvailabilityService {
     }
 
     getByProfessionalId(id: string): Observable<Availability[] | undefined> {
-        return this.repo.findByProfessionalId(id);
+        return this.repo.findByProfessional(id);
     }
 
     create(dto: CreateAvailabilityDto): Observable<Availability> {

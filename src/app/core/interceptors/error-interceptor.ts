@@ -7,12 +7,12 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const auth = inject(AuthService);
 
   return next(req).pipe(
-    catchError((err: HttpErrorResponse) => {
-      if (err.status === 401 || err.status === 403) {
+    catchError((error: HttpErrorResponse) => {
+      if (error.status === 401 || error.status === 403) {
         // Token expirado o sin permisos → cerrar sesión
         auth.logout();
       }
-      return throwError(() => err);
+      return throwError(() => error);
     })
   );
 };
