@@ -2,16 +2,15 @@ import { Component, inject, OnInit, OnDestroy, signal, ChangeDetectorRef } from 
 import { Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
-import { of, Subject, Subscription }            from 'rxjs';
+import { of, Subject, Subscription } from 'rxjs';
 import { AppointmentsService, CreateAppointmentDTO } from '../../../core/services/appointments.service';
 import { PatientsService, CreatePatientDto } from '../../../core/services/patients.service';
-import { AuthService }             from '../../../core/services/auth.service';
-import type { Professional }       from '../../../core/models/professional';
-import type { Specialty }          from '../../../core/models/professional';
-import type { Patient }            from '../../../core/models/patient';
-import { SpecialtyLabelPipe }      from '../../../shared/pipes/specialty-label-pipe';
-import { debounceTime, distinctUntilChanged, switchMap, tap, catchError, finalize } from 'rxjs/operators';
-import { StatusLabelPipe } from '../../../shared/pipes/status-label-pipe';
+import { AuthService } from '../../../core/services/auth.service';
+import type { Professional } from '../../../core/models/professional';
+import type { Specialty } from '../../../core/models/professional';
+import type { Patient } from '../../../core/models/patient';
+import { SpecialtyLabelPipe } from '../../../shared/pipes/specialty-label-pipe';
+import { debounceTime, distinctUntilChanged, switchMap, catchError, finalize } from 'rxjs/operators';
 
 const SPECIALTY_DESCRIPTIONS: Record<Specialty, string> = {
   QUIROPRAXIA: 'Ajuste y alineación de columna vertebral',
@@ -36,7 +35,6 @@ export class AppointmentFormComponent implements OnInit, OnDestroy {
   private subs = new Subscription();
 
   protected isSchedulerMode = signal(false);
-
   protected currentStep = 1;
   protected totalSteps = 3;
   protected booking: Partial<CreateAppointmentDTO> = {};
@@ -64,7 +62,6 @@ export class AppointmentFormComponent implements OnInit, OnDestroy {
   protected specialties = signal<Specialty[]>([]);
   protected professionals = signal<Professional[]>([]);
   protected specialtyDescriptions = SPECIALTY_DESCRIPTIONS;
-
   protected availableSlots: string[] = [];
 
   protected get minDate(): string {
@@ -79,17 +76,9 @@ export class AppointmentFormComponent implements OnInit, OnDestroy {
 
   protected get canGoStep2(): boolean {
     if (this.isSchedulerMode()) {
-      return (
-        this.selectedPatient !== null &&
-        this.booking.specialty !== null &&
-        this.booking.professional !== null
-      );
+      return this.selectedPatient !== null && this.booking.specialty !== null && this.booking.professional !== null;
     }
-
-    return (
-      this.booking.specialty !== null &&
-      this.booking.professional !== null
-    );
+    return this.booking.specialty !== null && this.booking.professional !== null;
   }
 
   protected get canGoStep3(): boolean {
@@ -98,29 +87,28 @@ export class AppointmentFormComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.isSchedulerMode.set(this.route.snapshot.data['mode'] === 'scheduler');
-  this.loadSpecialties();
+    this.loadSpecialties();
 
-  // ESTA ES LA SOLUCIÓN:
-  this.subs.add(
-    this.searchSubject.pipe(
-      debounceTime(300),           // Espera 300ms después de que dejes de escribir
-      distinctUntilChanged(),      // No busca si el texto es igual al anterior
-      switchMap(term => {
-        if (term.trim().length < 3) {
-          this.searchLoading = false;
-          return of([]); 
-        }
-        this.searchLoading = true; // Encendemos spinner
-        return this.patientsSvc.search(term).pipe(
-          catchError(() => of([])), // Si hay error, devuelve lista vacía
-          finalize(() => this.searchLoading = false) // ¡ESTO QUITA EL SPINNER SIEMPRE!
-        );
+    this.subs.add(
+      this.searchSubject.pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        switchMap(term => {
+          if (term.trim().length < 3) {
+            this.searchLoading = false;
+            return of([]);
+          }
+          this.searchLoading = true;
+          return this.patientsSvc.search(term).pipe(
+            catchError(() => of([])),
+            finalize(() => this.searchLoading = false)
+          );
+        })
+      ).subscribe(data => {
+        this.searchResults = data || [];
+        this.searchLoading = false;
       })
-    ).subscribe(data => {
-      this.searchResults = data || [];
-      this.searchLoading = false; // Refuerzo para apagar el spinner
-    })
-  );
+    );
   }
 
   ngOnDestroy(): void {
@@ -131,22 +119,21 @@ export class AppointmentFormComponent implements OnInit, OnDestroy {
     this.searchTerm = term;
     this.selectedPatient = null;
 
-    // Si es menor a 3, limpiamos y forzamos refresco
     if (term.trim().length < 3) {
       this.searchResults = [];
       this.searchLoading = false;
-      this.cdr.detectChanges(); 
+      this.cdr.detectChanges();
       return;
     }
 
     this.searchLoading = true;
-    this.cdr.detectChanges(); // Para que el spinner aparezca YA
+    this.cdr.detectChanges();
 
     const sub = this.patientsSvc.search(term).subscribe({
       next: (data) => {
         this.searchResults = data || [];
         this.searchLoading = false;
-        this.cdr.detectChanges(); // PARA QUE EL SPINNER SE QUITE Y SALGA SILVANA
+        this.cdr.detectChanges();
       },
       error: () => {
         this.searchResults = [];
@@ -174,7 +161,6 @@ export class AppointmentFormComponent implements OnInit, OnDestroy {
   protected toggleNewPatientForm(): void {
     this.showNewPatientForm = !this.showNewPatientForm;
     this.selectedPatient = null;
-
     if (this.showNewPatientForm) {
       this.patientForm.reset();
     }
@@ -185,9 +171,7 @@ export class AppointmentFormComponent implements OnInit, OnDestroy {
       this.patientForm.markAllAsTouched();
       return;
     }
-
     this.loading = true;
-
     const sub = this.patientsSvc.create(this.patientForm.value as CreatePatientDto).subscribe({
       next: (patient) => {
         this.selectedPatient = patient;
@@ -195,21 +179,15 @@ export class AppointmentFormComponent implements OnInit, OnDestroy {
         this.searchTerm = `${patient.firstName} ${patient.lastName}`;
         this.loading = false;
       },
-      error: () => {
-        this.loading = false;
-      }
+      error: () => { this.loading = false; }
     });
-
     this.subs.add(sub);
   }
 
   private loadSpecialties(): void {
     const sub = this.svc.getAvailableSpecialties().subscribe({
-      next: (data) => {
-        this.specialties.set(data);
-      },
+      next: (data) => { this.specialties.set(data); },
     });
-
     this.subs.add(sub);
   }
 
@@ -218,31 +196,19 @@ export class AppointmentFormComponent implements OnInit, OnDestroy {
       this.booking.professional = undefined;
       this.booking.date = undefined;
       this.booking.time = undefined;
-
       this.professionals.set([]);
       this.availableSlots = [];
     }
-
     this.booking.specialty = specialty;
     this.loading = true;
-
     const sub = this.svc.getProfessionalsBySpecialty(specialty).subscribe({
       next: (data) => {
         this.professionals.set(data);
-
-        if (data.length > 0) {
-          this.booking.professional = data[0];
-        } else {
-          this.booking.professional = undefined;
-        }
-
+        this.booking.professional = data.length > 0 ? data[0] : undefined;
         this.loading = false;
       },
-      error: () => {
-        this.loading = false;
-      }
+      error: () => { this.loading = false; }
     });
-
     this.subs.add(sub);
   }
 
@@ -250,7 +216,6 @@ export class AppointmentFormComponent implements OnInit, OnDestroy {
     this.booking.professional = prof;
     this.booking.time = undefined;
     this.availableSlots = [];
-
     if (this.booking.date) {
       this.onDateChange(this.booking.date);
     }
@@ -259,21 +224,18 @@ export class AppointmentFormComponent implements OnInit, OnDestroy {
   protected onDateChange(date: string): void {
     this.booking.date = date;
     this.booking.time = undefined;
-    this.availableSlots = []; // Limpiar lista vieja inmediatamente
-
+    this.availableSlots = [];
     if (!date || !this.booking.professional) {
       this.cdr.detectChanges();
       return;
     }
-
     this.loading = true;
     this.cdr.detectChanges();
-
     const sub = this.svc.getAvailableSlots(this.booking.professional.id, date).subscribe({
       next: (slots) => {
         this.availableSlots = slots || [];
         this.loading = false;
-        this.cdr.detectChanges(); // PARA QUE APAREZCAN LOS BOTONES DE HORA
+        this.cdr.detectChanges();
       },
       error: () => {
         this.loading = false;
@@ -287,70 +249,72 @@ export class AppointmentFormComponent implements OnInit, OnDestroy {
     this.booking.time = slot;
   }
 
-  /**
-   * Confirm to create a appointment
-   * @returns void
-   */
   protected confirm(): void {
-    // 1. Extraer datos
-  const dateValue = this.booking.date;
-  const timeValue = this.booking.time;
-  const professionalId = this.booking.professional?.id;
-  
-  // 2. Determinar el ID del paciente según el modo
-  let patientId: string | undefined;
-  
-  if (this.isSchedulerMode()) {
-    patientId = this.selectedPatient?.id;
-  } else {
-    // Si es modo paciente, sacamos el ID del usuario logueado
-    patientId = this.auth.currentUser()?.id;
-  }
+    const dateValue = this.booking.date;
+    const timeValue = this.booking.time;
+    const professionalId = this.booking.professional?.id;
 
-  // 3. Validación de seguridad antes de disparar
-  if (!dateValue || !timeValue || !professionalId || !patientId) {
-    this.errorMsg = 'Faltan datos obligatorios para confirmar la cita.';
-    this.cdr.detectChanges();
-    return;
-  }
-
-  this.loading = true;
-  this.errorMsg = null;
-  this.cdr.detectChanges();
-
-  // 4. PAYLOAD: Enviamos exactamente lo que el backend pide
-  const appointmentPayload = {
-    date: new Date(dateValue + 'T12:00:00'), // Instancia de Date real para el validador
-    time: timeValue,                         // El string 'HH:mm'
-    status: 'CONFIRMADA',                    // O 'PENDIENTE', según tu enum
-    professionalId: professionalId,          // El UUID, no la función
-    patientId: patientId                     // El UUID, no la función
-  };
-
-  const sub = this.svc.confirmAppointment(appointmentPayload as any).subscribe({
-    next: () => {
-      this.loading = false;
-      this.confirmed = true;
+    if (!dateValue || !timeValue || !professionalId) {
+      this.errorMsg = 'Faltan datos obligatorios para confirmar la cita.';
       this.cdr.detectChanges();
-    },
-    error: (err) => {
-      this.loading = false;
-      console.error('Error al guardar:', err);
-      const errorData = err.error?.message;
-      // Manejo de array de errores de NestJS
-      this.errorMsg = Array.isArray(errorData) ? errorData[0] : (errorData || 'Error al confirmar la cita');
-      this.cdr.detectChanges();
+      return;
     }
-  });
 
-  this.subs.add(sub);
+    this.loading = true;
+    this.errorMsg = null;
+    this.cdr.detectChanges();
+
+    if (this.isSchedulerMode()) {
+      const patientId = this.selectedPatient?.id;
+      if (!patientId) {
+        this.loading = false;
+        this.errorMsg = 'Debe seleccionar un paciente.';
+        this.cdr.detectChanges();
+        return;
+      }
+      this.submitAppointment(dateValue, timeValue, professionalId, patientId);
+    } else {
+      const sub = this.patientsSvc.findByUser().subscribe({
+        next: (patient: any) => {
+          this.submitAppointment(dateValue, timeValue, professionalId, patient.id);
+        },
+        error: () => {
+          this.loading = false;
+          this.errorMsg = 'No se encontró el perfil de paciente asociado a tu cuenta.';
+          this.cdr.detectChanges();
+        }
+      });
+      this.subs.add(sub);
+    }
+  }
+
+  private submitAppointment(date: string, time: string, professionalId: string, patientId: string): void {
+    const appointmentPayload = {
+      date: new Date(date + 'T12:00:00'),
+      time,
+      status: 'CONFIRMADA',
+      professionalId,
+      patientId
+    };
+    const sub = this.svc.confirmAppointment(appointmentPayload as any).subscribe({
+      next: () => {
+        this.loading = false;
+        this.confirmed = true;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.loading = false;
+        const errorData = err.error?.message;
+        this.errorMsg = Array.isArray(errorData) ? errorData[0] : (errorData || 'Error al confirmar la cita');
+        this.cdr.detectChanges();
+      }
+    });
+    this.subs.add(sub);
   }
 
   protected goToStep(step: number): void {
     this.errorMsg = null;
     this.currentStep = step;
-
-    // Si pasamos al paso 2 y ya hay datos, disparamos la carga
     if (step === 2 && this.booking.date && this.booking.professional) {
       this.onDateChange(this.booking.date);
     }
@@ -379,10 +343,7 @@ export class AppointmentFormComponent implements OnInit, OnDestroy {
 
   protected formatDate(date: string): string {
     return new Date(date + 'T00:00:00').toLocaleDateString('es-CO', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
+      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
     });
   }
 

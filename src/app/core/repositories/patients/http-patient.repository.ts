@@ -47,4 +47,7 @@ export class HttpPatientRepository extends PatientRepository {
   delete(id: string): Observable<boolean> {
     return this.http.delete<boolean>(`${this.url}/${id}`);
   }
+  findCurrentUser(): Observable<Patient> {
+  return this.http.get<Patient>(`${this.url}/user`);
+}
 }

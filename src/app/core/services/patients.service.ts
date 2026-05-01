@@ -29,7 +29,7 @@ export class PatientsService {
   }
 
   getByUser(user: string): Observable<Patient | undefined> {
-    return this.repo.findByUser(user);
+  return this.repo.findByUser(user);
   }
 
   search(term: string): Observable<Patient[]> {
@@ -51,4 +51,7 @@ export class PatientsService {
   delete(id: string): Observable<Boolean> {
     return this.repo.delete(id);
   }
+  findByUser(): Observable<Patient> {
+  return this.repo.findCurrentUser();
+}
 }

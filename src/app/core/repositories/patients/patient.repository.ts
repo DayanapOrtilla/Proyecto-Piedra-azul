@@ -8,4 +8,5 @@ export abstract class PatientRepository extends BaseRepository<Patient, CreatePa
   abstract search(term: string): Observable<Patient[]>;
   abstract deactivate(id: string): Observable<Patient>;
   abstract findByUser(user: string): Observable<Patient | undefined>;
+  abstract findCurrentUser(): Observable<Patient>;
 }

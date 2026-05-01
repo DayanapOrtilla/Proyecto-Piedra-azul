@@ -65,4 +65,7 @@ export class MockPatientRepository extends PatientRepository {
     this.data.splice(index, 1);
     return of(true);
   }
+  findCurrentUser(): Observable<Patient> {
+  return of(this.data[0]);
+}
 }
