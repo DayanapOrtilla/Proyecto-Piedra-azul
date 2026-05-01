@@ -8,6 +8,7 @@ import type { Professional }      from '../../core/models/professional';
 import type { Specialty }         from '../../core/models/professional';
 import type { Patient }           from '../models/patient';
 import { HttpParams } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
 
 export interface CreateAppointmentDTO {
   specialty: Specialty;
@@ -110,4 +111,22 @@ export class AppointmentsService {
   delete(id: string): Observable<Boolean> {
     return this.repo.delete(id);
   }
+  exportCsv(professionalId?: string, date?: string): void {
+  const token = localStorage.getItem('pa_token');
+  let url = `${environment.apiUrl}/appointments/export?`;
+  if (professionalId) url += `professionalId=${professionalId}&`;
+  if (date) url += `date=${date}`;
+
+  fetch(url, {
+    headers: { Authorization: `Bearer ${token}` }
+  })
+  .then(res => res.blob())
+  .then(blob => {
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `citas_${date || 'todas'}.csv`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+  });
+}
 }
