@@ -34,6 +34,7 @@ export const appConfig: ApplicationConfig = {
 
     // ── Repositorios ─────────────────────────────────────────
     // Para conectar el backend real: reemplaza Mock por Http
+    
     { provide: ProfessionalRepository, useClass: HttpProfessionalRepository },
     { provide: PatientRepository,      useClass: HttpPatientRepository      },
     { provide: AppointmentRepository,  useClass: HttpAppointmentRepository  },

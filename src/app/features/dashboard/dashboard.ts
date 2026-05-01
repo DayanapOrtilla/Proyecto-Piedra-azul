@@ -61,6 +61,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
     });
   }
 
+  protected get userName(): string {
+  const currentUser = this.auth.currentUser();
+  const email = currentUser?.user;
+  if (email && typeof email === 'string' && email.includes('@')) {
+    return email.split('@')[0];
+  }
+  return email || 'Usuario';
+}
+
   // ── Contadores para métricas ─────────────────────────────
   protected get totalToday()     { return this.filteredAppointments.length; }
   protected get totalConfirmed() { return this.filteredAppointments.filter(a => a.status === 'CONFIRMADA').length; }
@@ -70,6 +79,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
   protected get activeProfessionals(): Professional[] {
     return this.professionals().filter(p => p.isActive);
   }
+
+  
 
   // ── Ciclo de vida ────────────────────────────────────────
   ngOnInit(): void {

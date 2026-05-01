@@ -1,14 +1,13 @@
-<div class="min-vh-100 d-flex align-items-center justify-content-center login-container bg-light">
-  <div class="card shadow border-0" style="width: 400px;">
-
-    <div class="card-header bg-primary text-white text-center py-3">
-      <h5 class="mb-0 fw-bold">
-        <i class="bi bi-heart-pulse-fill me-2"></i>Piedra Azul
-      </h5>
-    </div>
-
-    <div class="card-body p-4">
-      <h6 class="text-muted mb-4 text-center">Inicia sesión para continuar</h6>
+<div class="min-vh-100 d-flex align-items-center justify-content-center login-container">
+  <div class="card border-0 shadow-lg" style="max-width: 450px; width: 100%;">
+    <div class="card-body p-4 p-md-5">
+      
+      <!-- Logo o título -->
+      <div class="text-center mb-4">
+        <i class="bi bi-heart-pulse-fill text-primary" style="font-size: 48px;"></i>
+        <h2 class="mt-2 fw-bold">Piedra Azul</h2>
+        <p class="text-muted">Centro de Medicina Alternativa</p>
+      </div>
 
       <!-- Mensaje de error -->
       @if (errorMsg()) {
@@ -19,41 +18,51 @@
       }
 
       <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
-
+        
         <div class="mb-3">
-          <label class="form-label">Identificación o usuario</label>
-          <input type="text" formControlName="user"
-                 class="form-control"
-                 [class.is-invalid]="isInvalid('user')"
-                 placeholder="Ingrese su documento o usuario">
+          <label class="form-label fw-semibold">Identificación o usuario</label>
+          <div class="input-group">
+            <span class="input-group-text bg-light border-end-0">
+              <i class="bi bi-person"></i>
+            </span>
+            <input type="text" 
+                   formControlName="user"
+                   class="form-control border-start-0"
+                   [class.is-invalid]="isInvalid('user')"
+                   placeholder="Ej: admin@piedra-azul.com o cédula">
+          </div>
           <div class="invalid-feedback">Ingresa un usuario o documento válido.</div>
         </div>
 
         <div class="mb-4">
-          <label class="form-label">Contraseña</label>
-          <input type="password" formControlName="password"
-                 class="form-control"
-                 [class.is-invalid]="isInvalid('password')">
+          <label class="form-label fw-semibold">Contraseña</label>
+          <div class="input-group">
+            <span class="input-group-text bg-light border-end-0">
+              <i class="bi bi-lock"></i>
+            </span>
+            <input type="password" 
+                   formControlName="password"
+                   class="form-control border-start-0"
+                   [class.is-invalid]="isInvalid('password')"
+                   placeholder="********">
+          </div>
           <div class="invalid-feedback">La contraseña debe tener al menos 6 caracteres.</div>
         </div>
 
-        <button type="submit" class="btn btn-primary w-100"
-                [disabled]="loading()">
+        <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold" [disabled]="loading()">
           @if (loading()) {
             <span class="spinner-border spinner-border-sm me-2"></span>
           }
           Ingresar
         </button>
-
       </form>
-    </div>
 
-    <div class="card-footer text-center bg-transparent py-3">
-      <small class="text-muted">
-        ¿Eres paciente nuevo?
-        <a routerLink="/register" class="ms-1">Regístrate aquí</a>
-      </small>
+      <div class="text-center mt-4">
+        <small class="text-muted">
+          ¿Eres paciente nuevo?
+          <a routerLink="/register" class="text-primary fw-semibold">Regístrate aquí</a>
+        </small>
+      </div>
     </div>
-
   </div>
 </div>

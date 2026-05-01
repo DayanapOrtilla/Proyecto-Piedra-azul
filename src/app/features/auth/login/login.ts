@@ -37,9 +37,10 @@ export class LoginComponent {
       const { user, password } = this.form.value;
       await this.auth.login({ user: user!, password: password! });
       this.router.navigate(['/dashboard']);
-    } catch {
-      this.errorMsg.set('Correo o contraseña incorrectos.');
-    } finally {
+    }catch {
+      this.errorMsg.set('Usuario o contraseña incorrectos. Por favor, verifica tus datos.');
+    }  
+    finally {
       this.loading.set(false);
     }
   }

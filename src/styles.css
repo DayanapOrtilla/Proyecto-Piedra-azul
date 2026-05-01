@@ -1,6 +1,91 @@
-:root {
-    --var-header-height: 60px;
-    --var-footer-height: 60px;
-    --var-sidebar-width: 220px;
-    --var-color-primary-dark: #021e6b;
+
+
+body {
+  background-color: #f4f6f9 !important;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, sans-serif;
+}
+
+/* Tarjetas blancas con sombras suaves */
+.card {
+  background-color: #ffffff !important;
+  border: none !important;
+  border-radius: 1.25rem !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+/* Botones redondeados */
+.btn {
+  border-radius: 0.75rem !important;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+}
+
+.btn-primary {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+}
+
+.btn-outline-primary {
+  color: #0d6efd;
+  border-color: #0d6efd;
+}
+.btn-outline-primary:hover {
+  background-color: #0d6efd;
+  color: white;
+}
+
+/* Badges redondeados */
+.badge {
+  border-radius: 2rem !important;
+  font-weight: 500;
+  font-size: 0.7rem;
+  padding: 0.35em 0.8em;
+}
+
+/* Tablas más limpias */
+.table th {
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #6c757d;
+  border-bottom-width: 1px;
+}
+.table td {
+  vertical-align: middle;
+  padding: 1rem 0.75rem;
+}
+
+/* Sidebar (blanco con texto oscuro) */
+.sidebar-container {
+  background-color: #ffffff !important;
+  border-right: 1px solid #e9ecef !important;
+}
+.sidebar-container .nav-link {
+  color: #4a5568 !important;
+  border-radius: 0.75rem;
+  margin: 0.25rem 0.5rem;
+}
+.sidebar-container .nav-link.active,
+.sidebar-container .nav-link:hover {
+  background-color: #eef2ff !important;
+  color: #0d6efd !important;
+}
+
+/* Header (blanco) */
+header {
+  background-color: #ffffff !important;
+  border-bottom: 1px solid #e9ecef;
+}
+header .btn-outline-light {
+  color: #4a5568;
+  border-color: #dee2e6;
+}
+header .btn-outline-light:hover {
+  background-color: #f1f3f5;
+}
+
+/* Eliminar cualquier gradiente o fondo azul en login/register */
+.login-container {
+  background: #f4f6f9 !important;
 }
