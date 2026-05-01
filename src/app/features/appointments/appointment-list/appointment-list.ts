@@ -51,19 +51,20 @@ export class AppointmentListComponent implements OnInit, OnDestroy {
   }
 
   protected loadAppointments(): void {
-    this.loading = true;
-    const sub = this.appointmenSvc.getHistory(
-      this.selectedProfessionalId || undefined,
-      this.selectedDate || undefined
-    ).subscribe({
-      next: (data) => {
-        this.appointments.set(data);
-        this.loading = false;
-      },
-      error: () => this.loading = false
-    });
-    this.subs.add(sub);
-  }
+  this.loading = true;
+  const sub = this.appointmenSvc.getHistory(
+    undefined,
+    this.selectedProfessionalId || undefined,
+    this.selectedDate || undefined
+  ).subscribe({
+    next: (data) => {
+      this.appointments.set(data);
+      this.loading = false;
+    },
+    error: () => this.loading = false
+  });
+  this.subs.add(sub);
+}
 
   protected onFilterChange(): void {
     this.loadAppointments();
