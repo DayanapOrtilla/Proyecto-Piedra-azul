@@ -51,6 +51,9 @@ export class MockAppointmentRepository extends AppointmentRepository {
   getHistory(patientId?: string, professionalId?: string, date?: string): Observable<Appointment[]> {
     return of(this.data.filter(p => p.professional.id !== professionalId));
   }
+  getMyAppointments(): Observable<Appointment[]> {
+  return this.http.get<Appointment[]>(`${this.url}/my-appointments`);
+  }
 
   save(booking: CreateAppointmentDTO): Observable<Appointment> {
     const newAppointment: Appointment = {

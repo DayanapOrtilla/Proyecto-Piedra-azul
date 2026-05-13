@@ -1,7 +1,7 @@
 import { Injectable, signal, computed, inject, PLATFORM_ID } from '@angular/core';
 import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
-import type { User, UserRole } from '../models/user';
+import type { AuthResponse, User, UserRole } from '../models/user';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { isPlatformBrowser } from '@angular/common';
@@ -49,7 +49,7 @@ export class AuthService {
     }
   }
 
-  async login(credentials: LoginCredentials): Promise<void> {
+/*  async login(credentials: LoginCredentials): Promise<void> {
     const tokenUrl = `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/token`;
 
     const body = new URLSearchParams();
@@ -92,7 +92,20 @@ export class AuthService {
       console.error('Login Keycloak Error:', error);
       return Promise.reject(new Error('Usuario o contraseña incorrectos'));
     }
+  }*/
+
+  async login(credentials: LoginCredentials): Promise<void> {
+  try {
+    const response = await this.http.post<AuthResponse>(`${environment.apiUrl}/auth/login`, credentials).toPromise();
+    if (response) {
+      localStorage.setItem('pa_token', response.access_token);
+      localStorage.setItem('pa_user', JSON.stringify(response.user));
+      this._user.set(response.user);
+    }
+  } catch (error) {
+    throw new Error('Credenciales incorrectas');
   }
+}
 
   async register(dto: RegisterPatientDto): Promise<void> {
     await firstValueFrom(

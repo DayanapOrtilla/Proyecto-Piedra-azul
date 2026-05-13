@@ -79,6 +79,9 @@ export class AppointmentsService {
       })
     );
   }
+  getMyAppointments(): Observable<Appointment[]> {
+  return this.repo.getMyAppointments();
+  }
 
   confirmAppointment(booking: CreateAppointmentDTO): Observable<Appointment> {
     return this.repo.save(booking);

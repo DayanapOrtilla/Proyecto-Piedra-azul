@@ -99,21 +99,31 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   // ── Métodos privados ─────────────────────────────────────
   private loadAppointments(): void {
-    this.loading = true;
+  this.loading = true;
 
-    const sub = this.appointmentSvc.findByProfessional(this.selectedProfessionalId, this.selectedDate).subscribe({
-      next: (data) => {
-        this.appointments.set(data);
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Error cargando citas:', err);
-        this.loading = false;
-      }
-    });
+  let obs;
 
-    this.subs.add(sub); // agrega al grupo de subscripciones
+  if (this.auth.userRole() === 'PACIENTE') {
+    // El paciente ve solo sus citas
+    obs = this.appointmentSvc.getMyAppointments();
+  } else {
+    // ADMIN, AGENDADOR, MEDICO ven citas filtradas por profesional/fecha
+    obs = this.appointmentSvc.findByProfessional(this.selectedProfessionalId, this.selectedDate);
   }
+
+  const sub = obs.subscribe({
+    next: (data) => {
+      this.appointments.set(data);
+      this.loading = false;
+    },
+    error: (err) => {
+      console.error('Error cargando citas:', err);
+      this.loading = false;
+    }
+  });
+
+  this.subs.add(sub);
+}
 
   private loadProfessionals(): void {
     const sub = this.proffesionalSvc.getAll().subscribe({

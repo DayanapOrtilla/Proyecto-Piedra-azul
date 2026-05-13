@@ -45,6 +45,9 @@ export class HttpAppointmentRepository extends AppointmentRepository {
   }
   return this.http.get<Appointment[]>(`${this.url}`, { params });
 }
+getMyAppointments(): Observable<Appointment[]> {
+  return this.http.get<Appointment[]>(`${this.url}/my-appointments`);
+}
 
   findById(id: string): Observable<Appointment> {
     return this.http.get<Appointment>(`${this.url}/${id}`);
