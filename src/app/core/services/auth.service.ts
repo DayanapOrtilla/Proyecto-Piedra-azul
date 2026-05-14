@@ -49,7 +49,7 @@ export class AuthService {
     }
   }
 
-/*  async login(credentials: LoginCredentials): Promise<void> {
+  async login(credentials: LoginCredentials): Promise<void> {
     const tokenUrl = `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/token`;
 
     const body = new URLSearchParams();
@@ -66,7 +66,6 @@ export class AuthService {
       );
 
       const accessToken = response.access_token;
-
       const payload = this._decodeToken(accessToken);
       const roles: string[] = payload?.realm_access?.roles ?? [];
       const appRole = roles.find((r: string) =>
@@ -86,26 +85,11 @@ export class AuthService {
       }
 
       this._user.set(user);
-      return Promise.resolve();
-
     } catch (error: any) {
       console.error('Login Keycloak Error:', error);
-      return Promise.reject(new Error('Usuario o contraseña incorrectos'));
+      throw new Error('Usuario o contraseña incorrectos');
     }
-  }*/
-
-  async login(credentials: LoginCredentials): Promise<void> {
-  try {
-    const response = await this.http.post<AuthResponse>(`${environment.apiUrl}/auth/login`, credentials).toPromise();
-    if (response) {
-      localStorage.setItem('pa_token', response.access_token);
-      localStorage.setItem('pa_user', JSON.stringify(response.user));
-      this._user.set(response.user);
-    }
-  } catch (error) {
-    throw new Error('Credenciales incorrectas');
   }
-}
 
   async register(dto: RegisterPatientDto): Promise<void> {
     await firstValueFrom(
@@ -155,4 +139,3 @@ export class AuthService {
     }
   }
 }
-

@@ -80,7 +80,7 @@ export class AppointmentsService {
     );
   }
   getMyAppointments(): Observable<Appointment[]> {
-  return this.repo.getMyAppointments();
+    return this.repo.getMyAppointments();
   }
 
   confirmAppointment(booking: CreateAppointmentDTO): Observable<Appointment> {
