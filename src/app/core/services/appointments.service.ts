@@ -1,37 +1,37 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable, map }    from 'rxjs';
+import { Observable, map, forkJoin }    from 'rxjs';
 import { AppointmentRepository }  from '../../core/repositories/appointments/appointment.repository';
 import { ProfessionalsService }   from '../../core/services/professionals.service';
+import { AvailabilityRepository } from '../repositories/availability/availability.repository';
 import type { Appointment }       from '../../core/models/appointment';
 import type { Professional }      from '../../core/models/professional';
 import type { Specialty }         from '../../core/models/professional';
 import type { Patient }           from '../models/patient';
+import { HttpParams } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
 
-export interface BookingState {
-  specialty:    Specialty    | null;
-  professional: Professional | null;
-  patient:      Pick<Patient, 'id' | 'firstName' | 'lastName' | 'phone'> | null; // ← agregar
-  date:         string       | null;
-  startTime:    string       | null;
-  endTime:      string       | null;
+export interface CreateAppointmentDTO {
+  specialty: Specialty;
+  professional: Pick<Professional, 'id' | 'firstName' | 'lastName' | 'specialty' | 'type' | 'intervalMinutes' | 'isActive'>;
+  patient: Pick<Patient, 'id' | 'firstName' | 'lastName' | 'phone'>;
+  date: string;
+  time: string;
 }
 
-export const EMPTY_BOOKING: BookingState = {
-  specialty:    null,
-  professional: null,
-  patient:      null,
-  date:         null,
-  startTime:    null,
-  endTime:      null,
-};
+export type UpdateAppointmentDTO = Partial<CreateAppointmentDTO>;
 
 @Injectable({ providedIn: 'root' })
 export class AppointmentsService {
   private repo     = inject(AppointmentRepository);
   private profsSvc = inject(ProfessionalsService);
+  private availRepo = inject(AvailabilityRepository);
 
-  getAll(professionalId?: string, date?: string): Observable<Appointment[]> {
-    return this.repo.findAll(professionalId, date);
+  findByProfessional(professionalId: string, date?: string): Observable<Appointment[]> {
+    return this.repo.findByProfessional(professionalId, date);
+  }
+
+  findByPatient(patientId: string, date?: string): Observable<Appointment[]>{
+    return this.repo.findByPatient(patientId, date);
   }
 
   getAvailableSpecialties(): Observable<Specialty[]> {
@@ -43,15 +43,47 @@ export class AppointmentsService {
   }
 
   getAvailableSlots(professionalId: string, date: string): Observable<string[]> {
-    return this.profsSvc.getById(professionalId).pipe(
-      map(professional => {
+    const dayOfWeek = new Date(date + 'T00:00:00').getDay(); // 0=Dom, 1=Lun...
+
+    return forkJoin({
+      professional: this.profsSvc.getById(professionalId),
+      availability: this.availRepo.findByProfessional(professionalId),
+      appointments: this.repo.findByProfessional(professionalId, date),
+    }).pipe(
+      map(({ professional, availability, appointments }) => {
         if (!professional) return [];
-        return this.generateSlots(8, 17, professional.intervalMinutes);
+
+        // Buscar disponibilidad del día seleccionado
+        const dayAvail = availability.find(
+          a => a.dayOfWeek === dayOfWeek && a.isActive
+        );
+
+        // Si el profesional no trabaja ese día, no hay slots
+        if (!dayAvail) return [];
+
+        // Generar slots del día según el horario configurado
+        const [startH, startM] = dayAvail.startTime.split(':').map(Number);
+        const [endH,   endM  ] = dayAvail.endTime.split(':').map(Number);
+        const allSlots = this.generateSlots(
+          startH * 60 + startM,
+          endH   * 60 + endM,
+          professional.intervalMinutes
+        );
+
+        // Quitar slots ya ocupados
+        const booked = appointments
+          .filter(a => a.status !== 'CANCELADA' && a.status !== 'NO_ASISTE')
+          .map(a => a.time);
+
+        return allSlots.filter(slot => !booked.includes(slot));
       })
     );
   }
+  getMyAppointments(): Observable<Appointment[]> {
+  return this.repo.getMyAppointments();
+  }
 
-  confirmAppointment(booking: BookingState): Observable<Appointment> {
+  confirmAppointment(booking: CreateAppointmentDTO): Observable<Appointment> {
     return this.repo.save(booking);
   }
 
@@ -61,15 +93,43 @@ export class AppointmentsService {
     return `${String(Math.floor(total / 60)).padStart(2,'0')}:${String(total % 60).padStart(2,'0')}`;
   }
 
-  private generateSlots(startHour: number, endHour: number, interval: number): string[] {
+  private generateSlots(startMin: number, endMin: number, interval: number): string[] {
     const slots: string[] = [];
-    for (let h = startHour; h < endHour; h++) {
-      for (let m = 0; m < 60; m += interval) {
-        if (h * 60 + m + interval <= endHour * 60) {
-          slots.push(`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`);
-        }
-      }
+    for (let min = startMin; min + interval <= endMin; min += interval) {
+      const h = String(Math.floor(min / 60)).padStart(2, '0');
+      const m = String(min % 60).padStart(2, '0');
+      slots.push(`${h}:${m}`);
     }
     return slots;
   }
+
+  getHistory(patientId?: string, professionalId?: string, date?: string): Observable<Appointment[]> {
+    return this.repo.getHistory(patientId, professionalId, date);
+  }
+
+  update(id: string, dto: UpdateAppointmentDTO): Observable<Appointment> {
+    return this.repo.update(id, dto);
+  }
+
+  delete(id: string): Observable<Boolean> {
+    return this.repo.delete(id);
+  }
+  exportCsv(professionalId?: string, date?: string): void {
+  const token = localStorage.getItem('pa_token');
+  let url = `${environment.apiUrl}/appointments/export?`;
+  if (professionalId) url += `professionalId=${professionalId}&`;
+  if (date) url += `date=${date}`;
+
+  fetch(url, {
+    headers: { Authorization: `Bearer ${token}` }
+  })
+  .then(res => res.blob())
+  .then(blob => {
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `citas_${date || 'todas'}.csv`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+  });
+}
 }

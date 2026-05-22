@@ -1,7 +1,7 @@
 import { Injectable }        from '@angular/core';
 import { Observable, of }    from 'rxjs';
 import { ProfessionalRepository } from './professional.repository';
-import type { Professional } from '../../models/professional';
+import type { Professional, Specialty } from '../../models/professional';
 import type { CreateProfessionalDto, UpdateProfessionalDto } from '../../../../app/core/services/professionals.service';
 
 @Injectable()
@@ -14,8 +14,14 @@ export class MockProfessionalRepository extends ProfessionalRepository {
     { id: 'p4', firstName: 'Sofía',  lastName: 'Pérez',     type: 'MEDICO',    specialty: 'QUIROPRAXIA',    intervalMinutes: 30, isActive: false, email: 's.perez@piedra-azul.com'     },
   ];
 
+  protected url : string = "";
+
   findAll(): Observable<Professional[]> {
     return of([...this.data]);
+  }
+
+  getProfessionalBySpecialty(specialty: Specialty): Observable<Professional[]> {
+    return of(this.data.filter(p => p.specialty === specialty));
   }
 
   findById(id: string): Observable<Professional | undefined> {
@@ -33,5 +39,12 @@ export class MockProfessionalRepository extends ProfessionalRepository {
     if (index === -1) throw new Error('Profesional no encontrado');
     this.data[index] = { ...this.data[index], ...dto };
     return of(this.data[index]);
+  }
+
+  delete(id: string): Observable<Boolean> {
+    const index = this.data.findIndex(p => p.id === id);
+    if (index === -1) throw new Error('Profesional no encontrado');
+    this.data.splice(index, 1);
+    return of(true);
   }
 }

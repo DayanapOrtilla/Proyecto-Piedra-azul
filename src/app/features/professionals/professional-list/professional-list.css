@@ -1,0 +1,17 @@
+/* professional-list.css */
+.card {
+  border-radius: 1.25rem !important;
+}
+.table th {
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: #6c757d;
+}
+.badge {
+  border-radius: 2rem;
+  font-weight: 500;
+}
+.btn-outline-primary, .btn-outline-danger {
+  border-radius: 0.5rem;
+}

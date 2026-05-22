@@ -1,92 +1,83 @@
 <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
   <div>
-    <h4 class="mb-0 fw-medium">Agenda del día</h4>
-    <small class="text-muted">Consulta y gestiona las citas programadas</small>
+    <h4 class="mb-0 fw-semibold">Gestión de Citas</h4>
+    <small class="text-muted">Programación y seguimiento de consultas</small>
   </div>
-  <a routerLink="/appointments/new"
-     class="btn btn-primary d-flex align-items-center gap-2">
-    <i class="bi bi-calendar-plus"></i>Nueva cita</a>
+  <div class="d-flex gap-2">
+    <button class="btn btn-outline-success d-flex align-items-center gap-2" (click)="exportCsv()">
+      <i class="bi bi-file-earmark-spreadsheet"></i> Exportar CSV
+    </button>
+    <a routerLink="/appointments/new" class="btn btn-primary d-flex align-items-center gap-2">
+      <i class="bi bi-calendar-plus"></i> Nueva cita
+    </a>
+  </div>
 </div>
 
 <!-- Filtros -->
 <div class="card border-0 shadow-sm mb-4">
-  <div class="card-body py-3">
+  <div class="card-body">
     <div class="row g-3 align-items-end">
-
-      <div class="col-12 col-md-5">
+      <div class="col-md-5">
         <label class="form-label text-muted small mb-1">Profesional</label>
-        <select class="form-select"
-                [(ngModel)]="selectedProfessionalId"
-                (change)="onFilterChange()">
+        <select class="form-select" [(ngModel)]="selectedProfessionalId" (change)="onFilterChange()">
           <option value="">Todos los profesionales</option>
-          @for (prof of professionals; track prof.id) {
-            <option [value]="prof.id">
-              {{ prof.type === 'MEDICO' ? 'Dr.' : 'Lic.' }}
-              {{ prof.firstName }} {{ prof.lastName }}
-            </option>
+          @for (prof of professionals(); track prof.id) {
+            <option [value]="prof.id">{{ prof.firstName }} {{ prof.lastName }}</option>
           }
         </select>
       </div>
-
-      <div class="col-12 col-md-4">
+      <div class="col-md-4">
         <label class="form-label text-muted small mb-1">Fecha</label>
-        <input type="date"
-               class="form-control"
-               [(ngModel)]="selectedDate"
-               (change)="onFilterChange()">
+        <input type="date" class="form-control" [(ngModel)]="selectedDate" (change)="onFilterChange()">
       </div>
-
-      <div class="col-12 col-md-3">
-        <button class="btn btn-outline-secondary w-100"
-                (click)="onFilterChange()">
-          <i class="bi bi-search me-1"></i>Buscar
+      <div class="col-md-3">
+        <button class="btn btn-secondary w-100" (click)="onFilterChange()">
+          <i class="bi bi-search me-1"></i> Buscar
         </button>
       </div>
-
     </div>
   </div>
 </div>
 
-<!-- Métricas -->
+<!-- Métricas rápidas -->
 <div class="row g-3 mb-4">
   <div class="col-6 col-md-3">
-    <div class="p-2 rounded-3 bg-body-secondary text-center">
-      <div class="text-muted small mb-1">Total</div>
-      <div class="fs-4 fw-medium">{{ total }}</div>
+    <div class="card border-0 shadow-sm text-center p-2">
+      <div class="text-muted small">Total</div>
+      <div class="fs-4 fw-bold">{{ total }}</div>
     </div>
   </div>
   <div class="col-6 col-md-3">
-    <div class="p-2 rounded-3 bg-body-secondary text-center">
-      <div class="text-muted small mb-1">Confirmadas</div>
-      <div class="fs-4 fw-medium text-success">{{ confirmed }}</div>
+    <div class="card border-0 shadow-sm text-center p-2">
+      <div class="text-muted small">Confirmadas</div>
+      <div class="fs-4 fw-bold text-success">{{ confirmed }}</div>
     </div>
   </div>
   <div class="col-6 col-md-3">
-    <div class="p-2 rounded-3 bg-body-secondary text-center">
-      <div class="text-muted small mb-1">Pendientes</div>
-      <div class="fs-4 fw-medium text-warning">{{ pending }}</div>
+    <div class="card border-0 shadow-sm text-center p-2">
+      <div class="text-muted small">Pendientes</div>
+      <div class="fs-4 fw-bold text-warning">{{ pending }}</div>
     </div>
   </div>
   <div class="col-6 col-md-3">
-    <div class="p-2 rounded-3 bg-body-secondary text-center">
-      <div class="text-muted small mb-1">Realizadas</div>
-      <div class="fs-4 fw-medium text-primary">{{ completed }}</div>
+    <div class="card border-0 shadow-sm text-center p-2">
+      <div class="text-muted small">Realizadas</div>
+      <div class="fs-4 fw-bold text-primary">{{ completed }}</div>
     </div>
   </div>
 </div>
 
-<!-- Tabla -->
+<!-- Tabla de citas -->
 <div class="card border-0 shadow-sm">
   <div class="card-body p-0">
-
     @if (loading) {
       <div class="text-center py-5">
         <div class="spinner-border text-primary"></div>
         <p class="text-muted mt-2">Cargando citas...</p>
       </div>
-    } @else if (appointments.length === 0) {
+    } @else if (appointments().length === 0) {
       <div class="text-center py-5">
-        <i class="bi bi-calendar-x text-muted" style="font-size: 40px;"></i>
+        <i class="bi bi-calendar-x text-muted fs-1"></i>
         <p class="text-muted mt-2">No hay citas para los filtros seleccionados.</p>
       </div>
     } @else {
@@ -103,47 +94,35 @@
             </tr>
           </thead>
           <tbody>
-            @for (appt of appointments; track appt.id) {
+            @for (appt of appointments(); track appt.id) {
               <tr>
-                <td class="ps-4">
-                  <span class="fw-medium text-primary">{{ appt.startTime }}</span>
-                  <br>
-                  <small class="text-muted">{{ appt.endTime }}</small>
-                </td>
+                <td class="ps-4"><span class="fw-semibold text-primary">{{ appt.time }}</span></td>
                 <td>
-                  <div class="fw-medium">
-                    {{ appt.patient.firstName }} {{ appt.patient.lastName }}
-                  </div>
+                  <div class="fw-semibold">{{ appt.patient.firstName }} {{ appt.patient.lastName }}</div>
                   <small class="text-muted">{{ appt.patient.phone }}</small>
                 </td>
-                <td class="d-none d-md-table-cell">
-                  {{ appt.professional.firstName }} {{ appt.professional.lastName }}
-                </td>
-                <td class="d-none d-lg-table-cell">
-                  <small>{{ appt.professional.specialty | specialtyLabel }}</small>
-                </td>
+                <td class="d-none d-md-table-cell">{{ appt.professional.firstName }} {{ appt.professional.lastName }}</td>
+                <td class="d-none d-lg-table-cell"><small>{{ appt.professional.specialty | specialtyLabel }}</small></td>
+                <td><span [class]="'badge ' + (appt.status | statusBadge)">{{ appt.status | statusLabel }}</span></td>
                 <td>
-                  <span [class]="'badge ' + (appt.status | statusBadge)">
-                    {{ appt.status | statusLabel }}
-                  </span>
-                </td>
-                <td>
-                  <button class="btn btn-sm btn-outline-secondary">
-                    <i class="bi bi-three-dots"></i>
-                  </button>
+                  <div class="dropdown">
+                    <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="dropdown">
+                      <i class="bi bi-three-dots"></i>
+                    </button>
+                    <ul class="dropdown-menu">
+                      <li><a class="dropdown-item" (click)="update(appt.id)">Editar</a></li>
+                      <li><a class="dropdown-item text-danger" (click)="delete(appt.id)">Cancelar</a></li>
+                    </ul>
+                  </div>
                 </td>
               </tr>
             }
           </tbody>
         </table>
       </div>
-
-      <div class="px-4 py-3 border-top">
-        <small class="text-muted">
-          {{ total }} cita{{ total !== 1 ? 's' : '' }} en total
-        </small>
+      <div class="px-4 py-3 border-top text-muted small">
+        {{ total }} cita(s) en total
       </div>
     }
-
   </div>
 </div>

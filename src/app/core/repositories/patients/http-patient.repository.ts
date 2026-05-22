@@ -8,8 +8,7 @@ import { environment }         from '../../../../environments/environment';
 
 @Injectable()
 export class HttpPatientRepository extends PatientRepository {
-  private http = inject(HttpClient);
-  private url  = `${environment.apiUrl}/patients`;
+  protected url  = `${environment.apiUrl}/patients`;
 
   findAll(): Observable<Patient[]> {
     return this.http.get<Patient[]>(this.url);
@@ -19,12 +18,22 @@ export class HttpPatientRepository extends PatientRepository {
     return this.http.get<Patient>(`${this.url}/${id}`);
   }
 
+  findByUser(user: string): Observable<Patient | undefined> {
+    return this.http.get<Patient>(`${this.url}?user=${user}`)
+  }
+
   search(term: string): Observable<Patient[]> {
     return this.http.get<Patient[]>(`${this.url}?search=${term}`);
   }
 
   save(dto: CreatePatientDto): Observable<Patient> {
-    return this.http.post<Patient>(this.url, dto);
+    const body = { ...dto };
+  
+    if (!body.birthdate) {
+      delete body.birthdate;
+    }
+
+    return this.http.post<Patient>(this.url, body);
   }
 
   update(id: string, dto: Partial<CreatePatientDto>): Observable<Patient> {
@@ -35,7 +44,10 @@ export class HttpPatientRepository extends PatientRepository {
     return this.http.patch<Patient>(`${this.url}/${id}/deactivate`, {});
   }
 
-  delete(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.url}/${id}`);
+  delete(id: string): Observable<boolean> {
+    return this.http.delete<boolean>(`${this.url}/${id}`);
   }
+  findCurrentUser(): Observable<Patient> {
+  return this.http.get<Patient>(`${this.url}/user`);
+}
 }

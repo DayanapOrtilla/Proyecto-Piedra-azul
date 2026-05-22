@@ -1,0 +1,37 @@
+/* dashboard.css */
+.min-w-70 {
+  min-width: 70px;
+}
+
+.card {
+  border-radius: 1rem !important;
+}
+
+.card-header {
+  border-radius: 1rem 1rem 0 0 !important;
+}
+
+.list-group-item:first-child {
+  border-top: none;
+}
+
+.list-group-item:last-child {
+  border-bottom: none;
+}
+
+.badge {
+  font-weight: 500;
+  padding: 0.4em 0.8em;
+}
+
+.btn-outline-primary {
+  border-radius: 0.75rem;
+}
+
+.rounded-circle {
+  border-radius: 50%;
+}
+
+.bg-opacity-10 {
+  --bs-bg-opacity: 0.1;
+}

@@ -4,9 +4,10 @@ import { PatientRepository }  from '../../core/repositories/patients/patient.rep
 import type { Gender, Patient }       from '../../core/models/patient';
 
 export interface CreatePatientDto {
-  documentId: string;
+  document: string;
   firstName:  string;
   lastName:   string;
+  birthdate?: Date;
   phone:      string;
   gender:     Gender;
   email?:     string;
@@ -27,6 +28,10 @@ export class PatientsService {
     return this.repo.findById(id);
   }
 
+  getByUser(user: string): Observable<Patient | undefined> {
+  return this.repo.findByUser(user);
+  }
+
   search(term: string): Observable<Patient[]> {
     return this.repo.search(term);
   }
@@ -43,7 +48,10 @@ export class PatientsService {
     return this.repo.deactivate(id);
   }
 
-  delete(id: string): Observable<void> {
+  delete(id: string): Observable<Boolean> {
     return this.repo.delete(id);
   }
+  findByUser(): Observable<Patient> {
+  return this.repo.findCurrentUser();
+}
 }
