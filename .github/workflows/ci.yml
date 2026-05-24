@@ -1,0 +1,27 @@
+name: CI - Piedrazul Frontend
+
+on:
+  push:
+    branches: [ main, tercer-corte ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Instalar dependencias
+        run: npm install --legacy-peer-deps
+
+      - name: Compilar proyecto
+        run: npm run build
