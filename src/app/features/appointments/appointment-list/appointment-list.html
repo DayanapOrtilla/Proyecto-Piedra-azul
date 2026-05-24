@@ -81,7 +81,7 @@
         <p class="text-muted mt-2">No hay citas para los filtros seleccionados.</p>
       </div>
     } @else {
-      <div class="table-responsive">
+      <div class="table-responsive" style="overflow: visible;">
         <table class="table table-hover align-middle mb-0">
           <thead class="table-light">
             <tr>
@@ -105,11 +105,11 @@
                 <td class="d-none d-lg-table-cell"><small>{{ appt.professional.specialty | specialtyLabel }}</small></td>
                 <td><span [class]="'badge ' + (appt.status | statusBadge)">{{ appt.status | statusLabel }}</span></td>
                 <td>
-                  <div class="dropdown">
+                  <div class="dropdown dropup">
                     <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="dropdown">
                       <i class="bi bi-three-dots"></i>
                     </button>
-                    <ul class="dropdown-menu">
+                    <ul class="dropdown-menu dropdown-menu-end">
                       <li><a class="dropdown-item" (click)="update(appt.id)">Editar</a></li>
                       <li><a class="dropdown-item text-warning" (click)="openReschedule(appt)">
                         <i class="bi bi-calendar-event me-1"></i>Re-agendar
