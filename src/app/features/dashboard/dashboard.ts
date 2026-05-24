@@ -63,11 +63,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   protected get userName(): string {
   const currentUser = this.auth.currentUser();
-  const email = currentUser?.user;
-  if (email && typeof email === 'string' && email.includes('@')) {
-    return email.split('@')[0];
+  if (currentUser?.firstName) {
+    return currentUser.firstName;
   }
-  return email || 'Usuario';
+  return currentUser?.user || 'Usuario';
 }
 
   // ── Contadores para métricas ─────────────────────────────

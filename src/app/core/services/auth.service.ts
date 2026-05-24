@@ -74,11 +74,13 @@ async login(credentials: LoginCredentials): Promise<void> {
     ) ?? 'PACIENTE';
 
     const user: User = {
-      id:       payload.sub,
-      user:     payload.preferred_username,
-      role:     appRole as UserRole,
-      isActive: true,
-    };
+  id:        payload.sub,
+  user:      payload.preferred_username,
+  firstName: payload.given_name,
+  lastName:  payload.family_name,
+  role:      appRole as UserRole,
+  isActive:  true,
+};
 
     if (isPlatformBrowser(this.platformId)) {
       localStorage.setItem(TOKEN_KEY, accessToken);

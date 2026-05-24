@@ -1,10 +1,12 @@
 export type UserRole = 'ADMINISTRADOR' | 'AGENDADOR' | 'MEDICO' | 'TERAPISTA' | 'PACIENTE';
 
 export interface User {
-  id:       string;
-  user:    string;
-  role:     UserRole;
-  isActive: boolean;
+  id:        string;
+  user:      string;
+  firstName?: string;
+  lastName?:  string;
+  role:      UserRole;
+  isActive:  boolean;
 }
 
 export interface AuthResponse {
@@ -13,6 +15,6 @@ export interface AuthResponse {
 }
 
 export interface LoginCredentials {
-  user:    string;
+  user:     string;
   password: string;
 }
