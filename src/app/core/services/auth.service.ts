@@ -49,61 +49,50 @@ export class AuthService {
     }
   }
 
-/*  async login(credentials: LoginCredentials): Promise<void> {
-    const tokenUrl = `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/token`;
+async login(credentials: LoginCredentials): Promise<void> {
+  const tokenUrl = `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/token`;
 
-    const body = new URLSearchParams();
-    body.set('client_id', KEYCLOAK_CLIENT);
-    body.set('grant_type', 'password');
-    body.set('username', credentials.user);
-    body.set('password', credentials.password);
+  const body = new URLSearchParams();
+  body.set('client_id', KEYCLOAK_CLIENT);
+  body.set('grant_type', 'password');
+  body.set('username', credentials.user);
+  body.set('password', credentials.password);
 
-    try {
-      const response = await firstValueFrom(
-        this.http.post<any>(tokenUrl, body.toString(), {
-          headers: new HttpHeaders({ 'Content-Type': 'application/x-www-form-urlencoded' })
-        })
-      );
-
-      const accessToken = response.access_token;
-
-      const payload = this._decodeToken(accessToken);
-      const roles: string[] = payload?.realm_access?.roles ?? [];
-      const appRole = roles.find((r: string) =>
-        ['ADMINISTRADOR', 'AGENDADOR', 'MEDICO', 'TERAPISTA', 'PACIENTE'].includes(r)
-      ) ?? 'PACIENTE';
-
-      const user: User = {
-        id:       payload.sub,
-        user:     payload.preferred_username,
-        role:     appRole as UserRole,
-        isActive: true,
-      };
-
-      if (isPlatformBrowser(this.platformId)) {
-        localStorage.setItem(TOKEN_KEY, accessToken);
-        localStorage.setItem(USER_KEY, JSON.stringify(user));
-      }
-
-      this._user.set(user);
-      return Promise.resolve();
-
-    } catch (error: any) {
-      console.error('Login Keycloak Error:', error);
-      return Promise.reject(new Error('Usuario o contraseña incorrectos'));
-    }
-  }*/
-
-  async login(credentials: LoginCredentials): Promise<void> {
   try {
-    const response = await this.http.post<AuthResponse>(`${environment.apiUrl}/auth/login`, credentials).toPromise();
-    if (response) {
-      localStorage.setItem('pa_token', response.access_token);
-      localStorage.setItem('pa_user', JSON.stringify(response.user));
-      this._user.set(response.user);
+    const response = await firstValueFrom(
+      this.http.post<any>(tokenUrl, body.toString(), {
+        headers: new HttpHeaders({ 'Content-Type': 'application/x-www-form-urlencoded' })
+      })
+    );
+
+    const accessToken = response.access_token;
+
+    const payload = this._decodeToken(accessToken);
+    const roles: string[] = payload?.realm_access?.roles ?? [];
+    const appRole = roles.find((r: string) =>
+      ['ADMINISTRADOR', 'AGENDADOR', 'MEDICO', 'TERAPISTA', 'PACIENTE'].includes(r)
+    ) ?? 'PACIENTE';
+
+    const user: User = {
+  id:        payload.sub,
+  user:      payload.preferred_username,
+  firstName: payload.given_name,
+  lastName:  payload.family_name,
+  role:      appRole as UserRole,
+  isActive:  true,
+};
+
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.setItem(TOKEN_KEY, accessToken);
+      localStorage.setItem(USER_KEY, JSON.stringify(user));
     }
-  } catch (error) {
-    throw new Error('Credenciales incorrectas');
+
+    this._user.set(user);
+    return Promise.resolve();
+
+  } catch (error: any) {
+    console.error('Login Keycloak Error:', error);
+    return Promise.reject(new Error('Usuario o contraseña incorrectos'));
   }
 }
 

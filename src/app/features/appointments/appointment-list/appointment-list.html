@@ -81,7 +81,7 @@
         <p class="text-muted mt-2">No hay citas para los filtros seleccionados.</p>
       </div>
     } @else {
-      <div class="table-responsive">
+      <div class="table-responsive" style="overflow: visible;">
         <table class="table table-hover align-middle mb-0">
           <thead class="table-light">
             <tr>
@@ -105,12 +105,16 @@
                 <td class="d-none d-lg-table-cell"><small>{{ appt.professional.specialty | specialtyLabel }}</small></td>
                 <td><span [class]="'badge ' + (appt.status | statusBadge)">{{ appt.status | statusLabel }}</span></td>
                 <td>
-                  <div class="dropdown">
+                  <div class="dropdown dropup">
                     <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="dropdown">
                       <i class="bi bi-three-dots"></i>
                     </button>
-                    <ul class="dropdown-menu">
+                    <ul class="dropdown-menu dropdown-menu-end">
                       <li><a class="dropdown-item" (click)="update(appt.id)">Editar</a></li>
+                      <li><a class="dropdown-item text-warning" (click)="openReschedule(appt)">
+                        <i class="bi bi-calendar-event me-1"></i>Re-agendar
+                      </a></li>
+                      <li><hr class="dropdown-divider"></li>
                       <li><a class="dropdown-item text-danger" (click)="delete(appt.id)">Cancelar</a></li>
                     </ul>
                   </div>
@@ -126,3 +130,54 @@
     }
   </div>
 </div>
+
+<!-- Modal Re-agendar -->
+@if (showRescheduleModal) {
+  <div class="modal-backdrop fade show" style="z-index: 1040;"></div>
+  <div class="modal fade show d-block" style="z-index: 1050;">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title fw-semibold">
+            <i class="bi bi-calendar-event me-2 text-warning"></i>Re-agendar cita
+          </h5>
+          <button class="btn-close" (click)="closeReschedule()"></button>
+        </div>
+        <div class="modal-body">
+          @if (selectedAppointment) {
+            <div class="bg-light rounded p-3 mb-3">
+              <small class="text-muted d-block">Cita actual</small>
+              <div class="fw-semibold">{{ selectedAppointment.patient.firstName }} {{ selectedAppointment.patient.lastName }}</div>
+              <div class="text-muted small">{{ selectedAppointment.date }} — {{ selectedAppointment.time }}</div>
+            </div>
+          }
+          <div class="mb-3">
+            <label class="form-label">Nueva fecha <span class="text-danger">*</span></label>
+            <input type="date" class="form-control" [(ngModel)]="rescheduleDate">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Nueva hora <span class="text-danger">*</span></label>
+            <input type="time" class="form-control" [(ngModel)]="rescheduleTime">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Motivo del cambio</label>
+            <textarea class="form-control" rows="2" [(ngModel)]="rescheduleReason"
+              placeholder="Ej: Solicitud del paciente, emergencia médica..."></textarea>
+          </div>
+          @if (rescheduleError) {
+            <div class="alert alert-danger py-2">{{ rescheduleError }}</div>
+          }
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="closeReschedule()">Cancelar</button>
+          <button class="btn btn-warning" (click)="confirmReschedule()" [disabled]="rescheduleLoading">
+            @if (rescheduleLoading) {
+              <span class="spinner-border spinner-border-sm me-1"></span>
+            }
+            Confirmar re-agendamiento
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

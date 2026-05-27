@@ -60,4 +60,11 @@ getMyAppointments(): Observable<Appointment[]> {
   delete(id: string): Observable<Boolean> {
     return this.http.delete<Boolean>(`${this.url}/${id}`);
   }
+  reschedule(id: string, newDate: string, newTime: string, reason?: string): Observable<Appointment> {
+  return this.http.patch<Appointment>(`${this.url}/${id}/reschedule`, {
+    newDate,
+    newTime,
+    reason
+  });
+}
 }
