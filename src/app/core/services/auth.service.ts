@@ -10,9 +10,9 @@ import { Gender } from '../models/patient';
 const TOKEN_KEY = 'pa_token';
 const USER_KEY  = 'pa_user';
 
-const KEYCLOAK_URL    = 'http://localhost:8080';
+const KEYCLOAK_URL    = 'https://piedra-azul-keycloak.onrender.com';
 const KEYCLOAK_REALM  = 'piedrazul';
-const KEYCLOAK_CLIENT = 'piedrazul-app';
+const KEYCLOAK_CLIENT = 'piedra-azul-frontend';
 
 export interface RegisterPatientDto {
   document: string;
