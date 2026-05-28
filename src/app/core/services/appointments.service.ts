@@ -110,7 +110,9 @@ export class AppointmentsService {
   update(id: string, dto: UpdateAppointmentDTO): Observable<Appointment> {
     return this.repo.update(id, dto);
   }
-
+  reschedule(id: string, newDate: string, newTime: string, reason?: string): Observable<Appointment> {
+  return this.repo.reschedule(id, newDate, newTime, reason);
+  }
   delete(id: string): Observable<Boolean> {
     return this.repo.delete(id);
   }

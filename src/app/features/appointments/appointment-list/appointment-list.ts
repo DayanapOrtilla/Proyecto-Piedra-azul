@@ -29,6 +29,15 @@ export class AppointmentListComponent implements OnInit, OnDestroy {
   protected selectedProfessionalId = '';
   protected selectedDate = new Date().toISOString().split('T')[0];
 
+  // Re-agendamiento
+  protected showRescheduleModal = false;
+  protected selectedAppointment: Appointment | null = null;
+  protected rescheduleDate = '';
+  protected rescheduleTime = '';
+  protected rescheduleReason = '';
+  protected rescheduleLoading = false;
+  protected rescheduleError: string | null = null;
+
   protected get total()     { return this.appointments().length; }
   protected get confirmed() { return this.appointments().filter(a => a.status === 'CONFIRMADA').length; }
   protected get pending()   { return this.appointments().filter(a => a.status === 'PENDIENTE').length; }
@@ -51,20 +60,20 @@ export class AppointmentListComponent implements OnInit, OnDestroy {
   }
 
   protected loadAppointments(): void {
-  this.loading = true;
-  const sub = this.appointmenSvc.getHistory(
-    undefined,
-    this.selectedProfessionalId || undefined,
-    this.selectedDate || undefined
-  ).subscribe({
-    next: (data) => {
-      this.appointments.set(data);
-      this.loading = false;
-    },
-    error: () => this.loading = false
-  });
-  this.subs.add(sub);
-}
+    this.loading = true;
+    const sub = this.appointmenSvc.getHistory(
+      undefined,
+      this.selectedProfessionalId || undefined,
+      this.selectedDate || undefined
+    ).subscribe({
+      next: (data) => {
+        this.appointments.set(data);
+        this.loading = false;
+      },
+      error: () => this.loading = false
+    });
+    this.subs.add(sub);
+  }
 
   protected onFilterChange(): void {
     this.loadAppointments();
@@ -76,17 +85,60 @@ export class AppointmentListComponent implements OnInit, OnDestroy {
     if (this.selectedProfessionalId) url += `professionalId=${this.selectedProfessionalId}&`;
     if (this.selectedDate) url += `date=${this.selectedDate}`;
 
-    fetch(url, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-    .then(res => res.blob())
-    .then(blob => {
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = `citas_${this.selectedDate || 'todas'}.csv`;
-      link.click();
-      URL.revokeObjectURL(link.href);
+    fetch(url, { headers: { Authorization: `Bearer ${token}` } })
+      .then(res => res.blob())
+      .then(blob => {
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `citas_${this.selectedDate || 'todas'}.csv`;
+        link.click();
+        URL.revokeObjectURL(link.href);
+      });
+  }
+
+  protected openReschedule(appt: Appointment): void {
+    this.selectedAppointment = appt;
+    this.rescheduleDate = appt.date;
+    this.rescheduleTime = appt.time;
+    this.rescheduleReason = '';
+    this.rescheduleError = null;
+    this.showRescheduleModal = true;
+  }
+
+  protected closeReschedule(): void {
+    this.showRescheduleModal = false;
+    this.selectedAppointment = null;
+    this.rescheduleError = null;
+  }
+
+  protected confirmReschedule(): void {
+    if (!this.rescheduleDate || !this.rescheduleTime) {
+      this.rescheduleError = 'La fecha y hora son obligatorias.';
+      return;
+    }
+
+    if (!this.selectedAppointment) return;
+
+    this.rescheduleLoading = true;
+    this.rescheduleError = null;
+
+    const sub = this.appointmenSvc.reschedule(
+      this.selectedAppointment.id,
+      this.rescheduleDate,
+      this.rescheduleTime,
+      this.rescheduleReason
+    ).subscribe({
+      next: () => {
+        this.rescheduleLoading = false;
+        this.closeReschedule();
+        this.loadAppointments();
+      },
+      error: (err) => {
+        this.rescheduleLoading = false;
+        this.rescheduleError = err.error?.message || 'Error al re-agendar la cita.';
+      }
     });
+    this.subs.add(sub);
   }
 
   protected update(id: string) {
