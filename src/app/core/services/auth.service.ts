@@ -1,18 +1,14 @@
-import { Injectable, signal, computed, inject, PLATFORM_ID } from '@angular/core';
+﻿import { Injectable, signal, computed, inject, PLATFORM_ID } from '@angular/core';
 import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
 import type { AuthResponse, User, UserRole } from '../models/user';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { isPlatformBrowser } from '@angular/common';
 import { Gender } from '../models/patient';
 
 const TOKEN_KEY = 'pa_token';
-const USER_KEY  = 'pa_user';
-
-const KEYCLOAK_URL    = 'https://piedra-azul-keycloak.onrender.com';
-const KEYCLOAK_REALM  = 'piedrazul';
-const KEYCLOAK_CLIENT = 'piedra-azul-frontend';
+const USER_KEY = 'pa_user';
 
 export interface RegisterPatientDto {
   document: string;
@@ -33,15 +29,15 @@ export interface LoginCredentials {
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private http       = inject(HttpClient);
-  private router     = inject(Router);
+  private http = inject(HttpClient);
+  private router = inject(Router);
   private platformId = inject(PLATFORM_ID);
 
   private _user = signal<User | null>(this._loadUserFromStorage());
 
   readonly currentUser = this._user.asReadonly();
-  readonly isLoggedIn  = computed(() => this._user() !== null);
-  readonly userRole    = computed(() => this._user()?.role ?? null);
+  readonly isLoggedIn = computed(() => this._user() !== null);
+  readonly userRole = computed(() => this._user()?.role ?? null);
 
   constructor() {
     if (isPlatformBrowser(this.platformId)) {
@@ -49,52 +45,29 @@ export class AuthService {
     }
   }
 
-async login(credentials: LoginCredentials): Promise<void> {
-  const tokenUrl = `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/token`;
+  async login(credentials: LoginCredentials): Promise<void> {
+    try {
+      const response = await firstValueFrom(
+        this.http.post<AuthResponse>(`${environment.apiUrl}/auth/login`, credentials)
+      );
 
-  const body = new URLSearchParams();
-  body.set('client_id', KEYCLOAK_CLIENT);
-  body.set('grant_type', 'password');
-  body.set('username', credentials.user);
-  body.set('password', credentials.password);
+      const token = response.token ?? response.access_token;
 
-  try {
-    const response = await firstValueFrom(
-      this.http.post<any>(tokenUrl, body.toString(), {
-        headers: new HttpHeaders({ 'Content-Type': 'application/x-www-form-urlencoded' })
-      })
-    );
+      if (!token) {
+        throw new Error('El backend no devolvió token');
+      }
 
-    const accessToken = response.access_token;
+      if (isPlatformBrowser(this.platformId)) {
+        localStorage.setItem(TOKEN_KEY, token);
+        localStorage.setItem(USER_KEY, JSON.stringify(response.user));
+      }
 
-    const payload = this._decodeToken(accessToken);
-    const roles: string[] = payload?.realm_access?.roles ?? [];
-    const appRole = roles.find((r: string) =>
-      ['ADMINISTRADOR', 'AGENDADOR', 'MEDICO', 'TERAPISTA', 'PACIENTE'].includes(r)
-    ) ?? 'PACIENTE';
-
-    const user: User = {
-  id:        payload.sub,
-  user:      payload.preferred_username,
-  firstName: payload.given_name,
-  lastName:  payload.family_name,
-  role:      appRole as UserRole,
-  isActive:  true,
-};
-
-    if (isPlatformBrowser(this.platformId)) {
-      localStorage.setItem(TOKEN_KEY, accessToken);
-      localStorage.setItem(USER_KEY, JSON.stringify(user));
+      this._user.set(response.user);
+    } catch (error) {
+      console.error('Login error:', error);
+      throw new Error('Credenciales incorrectas');
     }
-
-    this._user.set(user);
-    return Promise.resolve();
-
-  } catch (error: any) {
-    console.error('Login Keycloak Error:', error);
-    return Promise.reject(new Error('Usuario o contraseña incorrectos'));
   }
-}
 
   async register(dto: RegisterPatientDto): Promise<void> {
     await firstValueFrom(
@@ -124,16 +97,6 @@ async login(credentials: LoginCredentials): Promise<void> {
     return role !== null && roles.includes(role);
   }
 
-  private _decodeToken(token: string): any {
-    try {
-      const payload = token.split('.')[1];
-      const decoded = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
-      return JSON.parse(decoded);
-    } catch {
-      return {};
-    }
-  }
-
   private _loadUserFromStorage(): User | null {
     if (!isPlatformBrowser(this.platformId)) return null;
     try {
@@ -144,4 +107,3 @@ async login(credentials: LoginCredentials): Promise<void> {
     }
   }
 }
-
