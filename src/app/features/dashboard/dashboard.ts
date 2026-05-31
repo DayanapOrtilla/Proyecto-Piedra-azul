@@ -64,7 +64,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   protected get userName(): string {
   const currentUser = this.auth.currentUser();
   if (currentUser?.firstName || currentUser?.lastName) {
-    return ${currentUser.firstName ?? ''} .trim();
+    return ((currentUser?.firstName ?? '') + ' ' + (currentUser?.lastName ?? '')).trim() || currentUser?.user || 'Usuario';
   }
   return currentUser?.user || 'Usuario';
 }
@@ -138,3 +138,4 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.loadAppointments();
   }
 }
+
