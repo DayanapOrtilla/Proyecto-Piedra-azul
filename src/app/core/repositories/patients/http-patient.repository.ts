@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+﻿import { Injectable, inject } from '@angular/core';
 import { HttpClient }          from '@angular/common/http';
 import { Observable }          from 'rxjs';
 import { PatientRepository }   from './patient.repository';
@@ -23,7 +23,7 @@ export class HttpPatientRepository extends PatientRepository {
   }
 
   search(term: string): Observable<Patient[]> {
-    return this.http.get<Patient[]>(`${this.url}?search=${term}`);
+    return this.http.get<Patient[]>(`${this.url}/search?term=${encodeURIComponent(term)}`);
   }
 
   save(dto: CreatePatientDto): Observable<Patient> {
@@ -51,3 +51,5 @@ export class HttpPatientRepository extends PatientRepository {
   return this.http.get<Patient>(`${this.url}/user`);
 }
 }
+
+

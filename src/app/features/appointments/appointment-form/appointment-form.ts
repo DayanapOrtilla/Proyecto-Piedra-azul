@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, OnDestroy, signal, ChangeDetectorRef } from '@angular/core';
+﻿import { Component, inject, OnInit, OnDestroy, signal, ChangeDetectorRef } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
@@ -13,8 +13,8 @@ import { SpecialtyLabelPipe } from '../../../shared/pipes/specialty-label-pipe';
 import { debounceTime, distinctUntilChanged, switchMap, catchError, finalize } from 'rxjs/operators';
 
 const SPECIALTY_DESCRIPTIONS: Record<Specialty, string> = {
-  QUIROPRAXIA: 'Ajuste y alineación de columna vertebral',
-  FISIOTERAPIA: 'Rehabilitación física y muscular',
+  QUIROPRAXIA: 'Ajuste y alineaciÃ³n de columna vertebral',
+  FISIOTERAPIA: 'RehabilitaciÃ³n fÃ­sica y muscular',
   TERAPIA_NEURAL: 'Tratamiento del sistema nervioso',
 };
 
@@ -276,11 +276,18 @@ export class AppointmentFormComponent implements OnInit, OnDestroy {
     } else {
       const sub = this.patientsSvc.findByUser().subscribe({
         next: (patient: any) => {
+          if (!patient?.id) {
+            this.loading = false;
+            this.errorMsg = 'No se encontró el perfil de paciente asociado a tu cuenta.';
+            this.cdr.detectChanges();
+            return;
+          }
+
           this.submitAppointment(dateValue, timeValue, professionalId, patient.id);
         },
         error: () => {
           this.loading = false;
-          this.errorMsg = 'No se encontró el perfil de paciente asociado a tu cuenta.';
+          this.errorMsg = 'No se encontrÃ³ el perfil de paciente asociado a tu cuenta.';
           this.cdr.detectChanges();
         }
       });

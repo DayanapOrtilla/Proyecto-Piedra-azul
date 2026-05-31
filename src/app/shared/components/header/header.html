@@ -1,4 +1,4 @@
-<!-- navbar.component.html -->
+﻿<!-- navbar.component.html -->
 <header class="bg-primary px-3 d-flex align-items-center justify-content-between">
 
   <!-- Lado izquierdo: toggle + logo -->
@@ -20,7 +20,7 @@
   <div class="d-flex align-items-center gap-3">
 
     <span class="badge rounded-pill bg-white text-primary d-none d-md-inline">
-      {{ auth.currentUser()?.firstName || auth.currentUser()?.user }}
+      {{ ((auth.currentUser()?.firstName || '') + ' ' + (auth.currentUser()?.lastName || '')).trim() || auth.currentUser()?.user }}
     </span>
 
     <span class="badge rounded-pill bg-white bg-opacity-25 text-white">
