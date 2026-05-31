@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+﻿import { Injectable, inject } from '@angular/core';
 import { Observable, map, forkJoin }    from 'rxjs';
 import { AppointmentRepository }  from '../../core/repositories/appointments/appointment.repository';
 import { ProfessionalsService }   from '../../core/services/professionals.service';
@@ -53,15 +53,15 @@ export class AppointmentsService {
       map(({ professional, availability, appointments }) => {
         if (!professional) return [];
 
-        // Buscar disponibilidad del día seleccionado
+        // Buscar disponibilidad del dÃ­a seleccionado
         const dayAvail = availability.find(
           a => a.dayOfWeek === dayOfWeek && a.isActive
         );
 
-        // Si el profesional no trabaja ese día, no hay slots
+        // Si el profesional no trabaja ese dÃ­a, no hay slots
         if (!dayAvail) return [];
 
-        // Generar slots del día según el horario configurado
+        // Generar slots del dÃ­a segÃºn el horario configurado
         const [startH, startM] = dayAvail.startTime.split(':').map(Number);
         const [endH,   endM  ] = dayAvail.endTime.split(':').map(Number);
         const allSlots = this.generateSlots(
@@ -73,9 +73,9 @@ export class AppointmentsService {
         // Quitar slots ya ocupados
         const booked = appointments
           .filter(a => a.status !== 'CANCELADA' && a.status !== 'NO_ASISTE')
-          .map(a => a.time);
+          .map(a => (a.time ?? '').substring(0, 5));
 
-        return allSlots.filter(slot => !booked.includes(slot));
+        return allSlots.filter(slot => !booked.includes((slot ?? '').substring(0, 5)));
       })
     );
   }
