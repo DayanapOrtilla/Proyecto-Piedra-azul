@@ -1,4 +1,4 @@
-// src/app/features/dashboard/dashboard.component.ts
+﻿// src/app/features/dashboard/dashboard.component.ts
 
 import { Component, inject, OnInit, OnDestroy, signal } from '@angular/core';
 import { RouterLink }    from '@angular/router';
@@ -30,17 +30,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
   protected professionals = signal<Professional[]> ([]);
   protected loading = false;
 
-  // Filtros — propiedades normales ligadas al template con ngModel
+  // Filtros â€” propiedades normales ligadas al template con ngModel
   protected selectedDate             = new Date().toISOString().split('T')[0];
   protected selectedProfessionalId   = '';
 
-  // Subscriptions agrupadas — las cancelamos todas juntas en ngOnDestroy
+  // Subscriptions agrupadas â€” las cancelamos todas juntas en ngOnDestroy
   // Para HTTP no es obligatorio (el Observable completa solo),
-  // pero es buena práctica mantenerla desde el inicio
+  // pero es buena prÃ¡ctica mantenerla desde el inicio
   private subs = new Subscription();
 
-  // ── Visibilidad por rol ──────────────────────────────────
-  // Getters en lugar de signals — Angular los evalúa cada vez
+  // â”€â”€ Visibilidad por rol â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Getters en lugar de signals â€” Angular los evalÃºa cada vez
   // que el template los necesita, sin complejidad adicional
   protected get showAgenda()              { return this.auth.hasRole('ADMINISTRADOR', 'AGENDADOR', 'MEDICO', 'TERAPISTA'); }
   protected get showQuickActions()        { return this.auth.hasRole('AGENDADOR'); }
@@ -49,9 +49,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
   protected get showAppointmentMetrics()  { return this.auth.hasRole('ADMINISTRADOR', 'AGENDADOR', 'MEDICO', 'TERAPISTA'); }
   protected get showPatientMetrics()      { return this.auth.hasRole('PACIENTE'); }
 
-  // ── Datos filtrados ──────────────────────────────────────
+  // â”€â”€ Datos filtrados â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // Getter que filtra el array en memoria cada vez que cambia
-  // un filtro. Cuando el backend esté listo, esto se convierte
+  // un filtro. Cuando el backend estÃ© listo, esto se convierte
   // en una nueva llamada al servicio con los filtros como params.
   protected get filteredAppointments(): Appointment[] {
     return this.appointments().filter(a => {
@@ -63,13 +63,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   protected get userName(): string {
   const currentUser = this.auth.currentUser();
-  if (currentUser?.firstName) {
-    return currentUser.firstName;
+  if (currentUser?.firstName || currentUser?.lastName) {
+    return ${currentUser.firstName ?? ''} .trim();
   }
   return currentUser?.user || 'Usuario';
 }
 
-  // ── Contadores para métricas ─────────────────────────────
+  // â”€â”€ Contadores para mÃ©tricas â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   protected get totalToday()     { return this.filteredAppointments.length; }
   protected get totalConfirmed() { return this.filteredAppointments.filter(a => a.status === 'CONFIRMADA').length; }
   protected get totalPending()   { return this.filteredAppointments.filter(a => a.status === 'PENDIENTE').length; }
@@ -81,7 +81,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   
 
-  // ── Ciclo de vida ────────────────────────────────────────
+  // â”€â”€ Ciclo de vida â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   ngOnInit(): void {
     this.loadAppointments();
 
@@ -96,7 +96,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.subs.unsubscribe();
   }
 
-  // ── Métodos privados ─────────────────────────────────────
+  // â”€â”€ MÃ©todos privados â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   private loadAppointments(): void {
   this.loading = true;
 
