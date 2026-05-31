@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, OnDestroy, signal } from '@angular/core';
+﻿import { Component, inject, OnInit, OnDestroy, signal } from '@angular/core';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Subscription } from 'rxjs';
@@ -13,13 +13,13 @@ import { AvailabilityComponent } from '../availability/availability';
   styleUrl: './professional-form.css',
 })
 export class ProfessionalFormComponent implements OnInit, OnDestroy {
-  private svc   = inject(ProfessionalsService);
+  private svc    = inject(ProfessionalsService);
   private router = inject(Router);
   private route  = inject(ActivatedRoute);
   private fb     = inject(FormBuilder);
   private subs   = new Subscription();
 
-  protected activeTab = signal<'profile' | 'schedule'>('profile'); // Control de pestañas
+  protected activeTab = signal<'profile' | 'schedule'>('profile');
   protected isEditMode = signal(false);
   protected loading = signal(false);
   protected errorMsg = signal<string | null>(null);
@@ -34,16 +34,33 @@ export class ProfessionalFormComponent implements OnInit, OnDestroy {
     specialty:       ['', [Validators.required]],
     intervalMinutes: [30, [Validators.required, Validators.min(1)]],
     email:           ['', [Validators.required, Validators.email]],
-    password:   ['', [Validators.required, Validators.minLength(8)]],
+    password:        [''],
+    confirm:         [''],
     isActive:        [true],
   });
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
+
     if (id) {
       this.isEditMode.set(true);
       this.editingId = id;
+
+      this.form.get('password')?.clearValidators();
+      this.form.get('confirm')?.clearValidators();
+      this.form.clearValidators();
+      this.form.get('password')?.updateValueAndValidity();
+      this.form.get('confirm')?.updateValueAndValidity();
+      this.form.updateValueAndValidity();
+
       this.loadProfessional(id);
+    } else {
+      this.form.get('password')?.setValidators([Validators.required, Validators.minLength(8)]);
+      this.form.get('confirm')?.setValidators([Validators.required]);
+      this.form.setValidators(this.passwordMatch);
+      this.form.get('password')?.updateValueAndValidity();
+      this.form.get('confirm')?.updateValueAndValidity();
+      this.form.updateValueAndValidity();
     }
   }
 
@@ -51,25 +68,41 @@ export class ProfessionalFormComponent implements OnInit, OnDestroy {
     this.subs.unsubscribe();
   }
 
-  // Validador personalizado: Valor de contraseña y confirmación deben coincidir
   private passwordMatch(group: AbstractControl) {
-    const pass    = group.get('password')?.value;
+    const pass = group.get('password')?.value;
     const confirm = group.get('confirm')?.value;
     return pass === confirm ? null : { mismatch: true };
   }
 
   private loadProfessional(id: string): void {
     this.loading.set(true);
+
     const sub = this.svc.getById(id).subscribe({
       next: (prof) => {
         if (prof) {
-          this.editingId = prof.id
-          this.form.patchValue(prof);
+          this.editingId = prof.id;
+
+          this.form.patchValue({
+            firstName: prof.firstName,
+            lastName: prof.lastName,
+            type: prof.type,
+            specialty: prof.specialty,
+            intervalMinutes: prof.intervalMinutes,
+            email: prof.email,
+            isActive: prof.isActive,
+            password: '',
+            confirm: '',
+          });
         }
+
         this.loading.set(false);
       },
-      error: () => { this.loading.set(false); }
+      error: () => {
+        this.loading.set(false);
+        this.errorMsg.set('No se pudo cargar el profesional.');
+      }
     });
+
     this.subs.add(sub);
   }
 
@@ -82,24 +115,28 @@ export class ProfessionalFormComponent implements OnInit, OnDestroy {
     this.loading.set(true);
     this.errorMsg.set(null);
 
-    const dto = this.form.value as CreateProfessionalDto;
+    const dto: any = { ...this.form.value };
+
+    delete dto.confirm;
+
+    if (this.isEditMode()) {
+      delete dto.password;
+    }
 
     const request = this.isEditMode() && this.editingId
       ? this.svc.update(this.editingId, dto)
-      : this.svc.create(dto);
+      : this.svc.create(dto as CreateProfessionalDto);
 
     this.subs.add(
       request.subscribe({
         next: (res: any) => {
           this.loading.set(false);
-          
+
           if (!this.isEditMode()) {
-            // FLUJO CREACIÓN: Guardamos ID y saltamos a la siguiente pestaña
             this.editingId = res.id;
             this.isEditMode.set(true);
-            this.activeTab.set('schedule'); 
+            this.activeTab.set('schedule');
           } else {
-            // FLUJO EDICIÓN: Solo informamos o volvemos
             this.router.navigate(['/professionals']);
           }
         },
